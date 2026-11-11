@@ -13,6 +13,7 @@ import (
 	"assetku/api/internal/config"
 	"assetku/api/internal/db"
 	"assetku/api/internal/httpx"
+	"assetku/api/internal/masterdata"
 )
 
 func createSuperAdmin(args []string) error {
@@ -67,9 +68,11 @@ func main() {
 	log.Printf("%s API listening on %s", config.ProductName, cfg.Addr)
 	svc := auth.NewService(pool, cfg.CookieSecure)
 	adminSvc := admin.NewService(pool, svc)
+	masterSvc := masterdata.NewService(pool, svc)
 	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
+		masterSvc.Register(mux)
 	}})
 	log.Fatal(http.ListenAndServe(cfg.Addr, router))
 }
