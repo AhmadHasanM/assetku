@@ -15,6 +15,8 @@ var errNotFound = httpx.Error{Status: http.StatusNotFound, Code: "not_found", Me
 func (s *Service) Register(mux *http.ServeMux) {
 	user := httpx.RequireUser(s.auth)
 	mux.Handle("POST /api/assets", user(httpx.H(s.create)))
+	mux.Handle("GET /api/assets", user(httpx.H(s.list)))
+	mux.Handle("GET /api/assets/summary", user(httpx.H(s.summary)))
 	mux.Handle("GET /api/assets/assignees", user(httpx.H(s.assignees)))
 	mux.Handle("GET /api/assets/{id}", user(httpx.H(s.get)))
 	mux.Handle("PUT /api/assets/{id}", user(httpx.H(s.update)))
