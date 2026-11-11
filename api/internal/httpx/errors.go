@@ -33,7 +33,15 @@ func H(h Handler) http.HandlerFunc {
 			return
 		}
 		var he Error
-		if errors.As(err, &he) {
+		var hp *Error
+		switch {
+		case errors.As(err, &he):
+		case errors.As(err, &hp) && hp != nil:
+			he = *hp
+		default:
+			he = Error{}
+		}
+		if he.Status != 0 {
 			JSON(w, he.Status, map[string]any{"error": errBody{he.Code, he.Message, he.Fields}})
 			return
 		}

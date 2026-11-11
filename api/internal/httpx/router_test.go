@@ -64,3 +64,13 @@ func TestDecodeInvalidJSON(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestHAcceptsPointerError(t *testing.T) {
+	rec := httptest.NewRecorder()
+	httpx.H(func(w http.ResponseWriter, r *http.Request) error {
+		return &httpx.Error{Status: 404, Code: "not_found", Message: "missing"}
+	})(rec, httptest.NewRequest("GET", "/", nil))
+	if rec.Code != 404 || !strings.Contains(rec.Body.String(), `"code":"not_found"`) {
+		t.Fatalf("got %d %s", rec.Code, rec.Body.String())
+	}
+}

@@ -8,7 +8,10 @@ import (
 
 // Deps holds shared dependencies for handlers.
 type Deps struct {
-	Pool *pgxpool.Pool
+	Pool         *pgxpool.Pool
+	CookieSecure bool
+	// Register mounts feature routes (e.g. auth.Service.Register) on the mux.
+	Register func(mux *http.ServeMux)
 }
 
 func NewRouter(deps Deps) http.Handler {
@@ -17,5 +20,8 @@ func NewRouter(deps Deps) http.Handler {
 		JSON(w, http.StatusOK, map[string]bool{"ok": true})
 		return nil
 	}))
-	return mux
+	if deps.Register != nil {
+		deps.Register(mux)
+	}
+	return CSRF(deps.CookieSecure)(mux)
 }
