@@ -55,7 +55,9 @@ func IsUniqueViolation(err error) (string, bool) {
 	return "", false
 }
 
+// IsFKViolation reports a foreign key violation: 23503, or 23001
+// (restrict_violation) raised by ON DELETE RESTRICT references.
 func IsFKViolation(err error) bool {
 	var pe *pgconn.PgError
-	return errors.As(err, &pe) && pe.Code == "23503"
+	return errors.As(err, &pe) && (pe.Code == "23503" || pe.Code == "23001")
 }

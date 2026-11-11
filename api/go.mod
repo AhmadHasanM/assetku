@@ -3,10 +3,12 @@ module assetku/api
 go 1.26.0
 
 require (
+	cloud.google.com/go v0.123.0
 	github.com/fergusstrange/embedded-postgres v1.34.0
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.12.0
+	github.com/shopspring/decimal v1.6.0
 	golang.org/x/crypto v0.57.0
 )
 

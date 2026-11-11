@@ -283,3 +283,25 @@ func TestCreateSuperadminCommandIdempotent(t *testing.T) {
 		t.Fatal("expected weak password error")
 	}
 }
+
+func TestTenantAssetCount(t *testing.T) {
+	e := setup(t)
+	acme := e.createTenant(t, "Acme")
+	beta := e.createTenant(t, "Beta")
+	for _, row := range []struct{ tenant, tag string }{{acme.ID, "A-1"}, {acme.ID, "A-2"}, {beta.ID, "B-1"}} {
+		if _, err := e.pool.Exec(context.Background(),
+			`INSERT INTO assets (tenant_id, name, asset_tag, category) VALUES ($1, 'x', $2, 'other')`, row.tenant, row.tag); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var list []tenantItem
+	e.admin.JSON(e.admin.Do("GET", "/api/admin/tenants", nil), &list)
+	if len(list) != 2 || list[0].AssetCount != 2 || list[1].AssetCount != 1 {
+		t.Fatalf("tenants %+v", list)
+	}
+	var one tenantItem
+	e.admin.JSON(e.admin.Do("PATCH", "/api/admin/tenants/"+acme.ID, map[string]any{"name": "Acme 2"}), &one)
+	if one.AssetCount != 2 {
+		t.Fatalf("single tenant %+v", one)
+	}
+}

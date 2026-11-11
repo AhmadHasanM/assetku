@@ -2,6 +2,7 @@ package masterdata_test
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -258,5 +259,32 @@ func TestFindOrCreateByName(t *testing.T) {
 	// Also works directly on the pool.
 	if got, ok, err := e.svc.FindByName(ctx, e.pool, e.tenantA, masterdata.Locations, "kantor pusat"); err != nil || ok {
 		t.Fatalf("uncommitted row visible via pool: %v %v %v", got, ok, err)
+	}
+}
+
+func TestUnknownKindRejected(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	bad := masterdata.Kind("users; DROP TABLE users")
+	if _, err := e.svc.List(ctx, e.tenantA, bad, ""); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("List: %v", err)
+	}
+	if _, err := e.svc.Create(ctx, e.tenantA, bad, map[string]string{"name": "x"}); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("Create: %v", err)
+	}
+	if _, err := e.svc.Update(ctx, e.tenantA, uuid.New(), bad, nil); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("Update: %v", err)
+	}
+	if err := e.svc.Delete(ctx, e.tenantA, uuid.New(), bad); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("Delete: %v", err)
+	}
+	if _, err := e.svc.AssetCounts(ctx, e.tenantA, bad); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("AssetCounts: %v", err)
+	}
+	if _, _, err := e.svc.FindByName(ctx, e.pool, e.tenantA, bad, "x"); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("FindByName: %v", err)
+	}
+	if _, _, err := e.svc.FindOrCreateByName(ctx, e.pool, e.tenantA, bad, "x"); !errors.Is(err, masterdata.ErrUnknownKind) {
+		t.Fatalf("FindOrCreateByName: %v", err)
 	}
 }

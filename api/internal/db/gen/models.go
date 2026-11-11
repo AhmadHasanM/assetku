@@ -8,7 +8,59 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Asset struct {
+	ID             uuid.UUID
+	TenantID       uuid.UUID
+	Name           string
+	AssetTag       string
+	Category       string
+	Manufacturer   string
+	Model          string
+	SerialNumber   string
+	Status         string
+	LocationID     uuid.NullUUID
+	AssignedTo     string
+	OrganizationID uuid.NullUUID
+	SupplierID     uuid.NullUUID
+	OrderNumber    string
+	PurchaseDate   pgtype.Date
+	PurchaseCost   pgtype.Numeric
+	WarrantyMonths pgtype.Int4
+	Notes          string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+type AssetHistory struct {
+	ID        int64
+	TenantID  uuid.UUID
+	AssetID   uuid.UUID
+	Event     string
+	ActorID   uuid.NullUUID
+	ActorName string
+	Detail    []byte
+	CreatedAt time.Time
+}
+
+type Location struct {
+	ID          uuid.UUID
+	TenantID    uuid.UUID
+	Name        string
+	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+type Organization struct {
+	ID        uuid.UUID
+	TenantID  uuid.UUID
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
 
 type Session struct {
 	TokenHash   []byte
@@ -24,6 +76,18 @@ type SuperAdmin struct {
 	Email        string
 	PasswordHash string
 	CreatedAt    time.Time
+}
+
+type Supplier struct {
+	ID          uuid.UUID
+	TenantID    uuid.UUID
+	Name        string
+	ContactName string
+	Phone       string
+	Email       string
+	Address     string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Tenant struct {

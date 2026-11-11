@@ -9,9 +9,11 @@ import (
 	"os"
 
 	"assetku/api/internal/admin"
+	"assetku/api/internal/asset"
 	"assetku/api/internal/auth"
 	"assetku/api/internal/config"
 	"assetku/api/internal/db"
+	"assetku/api/internal/history"
 	"assetku/api/internal/httpx"
 	"assetku/api/internal/masterdata"
 )
@@ -69,10 +71,14 @@ func main() {
 	svc := auth.NewService(pool, cfg.CookieSecure)
 	adminSvc := admin.NewService(pool, svc)
 	masterSvc := masterdata.NewService(pool, svc)
+	assetSvc := asset.NewService(pool, svc)
+	historySvc := history.NewService(pool, svc)
 	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
 		masterSvc.Register(mux)
+		assetSvc.Register(mux)
+		historySvc.Register(mux)
 	}})
 	log.Fatal(http.ListenAndServe(cfg.Addr, router))
 }

@@ -28,6 +28,13 @@ const (
 	Suppliers     Kind = "suppliers"
 )
 
+// assetColumn is the assets column referencing each kind.
+var assetColumn = map[Kind]string{
+	Locations:     "location_id",
+	Organizations: "organization_id",
+	Suppliers:     "supplier_id",
+}
+
 // kindFields lists the whitelisted text fields (besides name) per kind.
 var kindFields = map[Kind][]string{
 	Locations:     {"description"},
@@ -49,7 +56,16 @@ var (
 	ErrNotFound     = errors.New("masterdata: not found")
 	ErrNameTaken    = errors.New("masterdata: name taken")
 	ErrNameRequired = errors.New("masterdata: name required")
+	ErrUnknownKind  = errors.New("masterdata: unknown kind")
 )
+
+// check guards every exported method: Kind is interpolated into SQL.
+func (k Kind) check() error {
+	if _, ok := kindFields[k]; !ok {
+		return fmt.Errorf("%w %q", ErrUnknownKind, string(k))
+	}
+	return nil
+}
 
 // Service serves master data. The unexported pool is used by the HTTP handlers;
 // FindByName/FindOrCreateByName accept any gen.DBTX (pgx.Tx, *pgxpool.Pool,
@@ -91,18 +107,37 @@ func scanItem(row pgx.Row, k Kind) (Item, error) {
 }
 
 // AssetCounts returns how many assets of the tenant reference each row of the
-// kind (missing id means 0).
-//
-// TODO(Task 5): the assets table does not exist yet, so this returns an empty
-// map. Replace with a GROUP BY count on assets.location_id / organization_id /
-// supplier_id. It backs both the list asset_count and the in_use delete count.
+// kind (missing id means 0), in one grouped query. It backs both the list
+// asset_count and the in_use delete count.
 func (s *Service) AssetCounts(ctx context.Context, tenantID uuid.UUID, k Kind) (map[uuid.UUID]int64, error) {
-	return map[uuid.UUID]int64{}, nil
+	if err := k.check(); err != nil {
+		return nil, err
+	}
+	col := assetColumn[k]
+	rows, err := s.pool.Query(ctx, fmt.Sprintf(
+		"SELECT %[1]s, count(*) FROM assets WHERE tenant_id = $1 AND %[1]s IS NOT NULL GROUP BY %[1]s", col), tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[uuid.UUID]int64{}
+	for rows.Next() {
+		var id uuid.UUID
+		var n int64
+		if err := rows.Scan(&id, &n); err != nil {
+			return nil, err
+		}
+		out[id] = n
+	}
+	return out, rows.Err()
 }
 
 // List returns the tenant's rows ordered by name, optionally filtered by a
 // case-insensitive substring of the name.
 func (s *Service) List(ctx context.Context, tenantID uuid.UUID, k Kind, q string) ([]Item, error) {
+	if err := k.check(); err != nil {
+		return nil, err
+	}
 	args := []any{tenantID}
 	where := "tenant_id = $1"
 	if q = strings.TrimSpace(q); q != "" {
@@ -146,6 +181,9 @@ func mapWriteErr(err error) error {
 
 // Create inserts a row. values holds whitelisted fields only (name required).
 func (s *Service) Create(ctx context.Context, tenantID uuid.UUID, k Kind, values map[string]string) (Item, error) {
+	if err := k.check(); err != nil {
+		return nil, err
+	}
 	name := strings.TrimSpace(values["name"])
 	if name == "" {
 		return nil, ErrNameRequired
@@ -167,6 +205,9 @@ func (s *Service) Create(ctx context.Context, tenantID uuid.UUID, k Kind, values
 
 // Update changes only the fields present in values (whitelisted keys).
 func (s *Service) Update(ctx context.Context, tenantID, id uuid.UUID, k Kind, values map[string]string) (Item, error) {
+	if err := k.check(); err != nil {
+		return nil, err
+	}
 	sets, args := []string{"updated_at = now()"}, []any{tenantID, id}
 	for _, c := range k.columns() {
 		v, ok := values[c]
@@ -200,6 +241,9 @@ func (s *Service) Update(ctx context.Context, tenantID, id uuid.UUID, k Kind, va
 // Delete removes a row. A foreign-key violation (assets still reference it) is
 // returned unchanged so the caller can map it with db.IsFKViolation.
 func (s *Service) Delete(ctx context.Context, tenantID, id uuid.UUID, k Kind) error {
+	if err := k.check(); err != nil {
+		return err
+	}
 	tag, err := s.pool.Exec(ctx, fmt.Sprintf("DELETE FROM %s WHERE tenant_id = $1 AND id = $2", k), tenantID, id)
 	if err != nil {
 		return err
@@ -213,6 +257,9 @@ func (s *Service) Delete(ctx context.Context, tenantID, id uuid.UUID, k Kind) er
 // FindByName looks a row up by trimmed, case-insensitive name. q may be a
 // pgx.Tx or the pool.
 func (s *Service) FindByName(ctx context.Context, q gen.DBTX, tenantID uuid.UUID, k Kind, name string) (uuid.UUID, bool, error) {
+	if err := k.check(); err != nil {
+		return uuid.Nil, false, err
+	}
 	var id uuid.UUID
 	err := q.QueryRow(ctx, fmt.Sprintf(
 		"SELECT id FROM %s WHERE tenant_id = $1 AND lower(btrim(name)) = lower(btrim($2))", k),
@@ -230,6 +277,9 @@ func (s *Service) FindByName(ctx context.Context, q gen.DBTX, tenantID uuid.UUID
 // case-insensitive), inserting it when missing. A blank name is ErrNameRequired.
 // q may be a pgx.Tx or the pool; the insert is race-safe via ON CONFLICT.
 func (s *Service) FindOrCreateByName(ctx context.Context, q gen.DBTX, tenantID uuid.UUID, k Kind, name string) (uuid.UUID, bool, error) {
+	if err := k.check(); err != nil {
+		return uuid.Nil, false, err
+	}
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return uuid.Nil, false, ErrNameRequired

@@ -11,18 +11,16 @@ ON CONFLICT (lower(email)) DO UPDATE SET name = EXCLUDED.name, password_hash = E
 RETURNING id;
 
 -- name: ListTenantsAdmin :many
--- asset_count is a placeholder until the assets table exists (Task 5 replaces
--- the 0 with a count over assets joined on tenant_id). Never select asset rows here.
 SELECT t.id, t.name, t.active, t.created_at,
        (SELECT count(*) FROM users u WHERE u.tenant_id = t.id)::bigint AS user_count,
-       0::bigint AS asset_count
+       (SELECT count(*) FROM assets a WHERE a.tenant_id = t.id)::bigint AS asset_count
 FROM tenants t
 ORDER BY t.created_at, t.id;
 
 -- name: GetTenantAdmin :one
 SELECT t.id, t.name, t.active, t.created_at,
        (SELECT count(*) FROM users u WHERE u.tenant_id = t.id)::bigint AS user_count,
-       0::bigint AS asset_count -- Task 5: replace with real asset count
+       (SELECT count(*) FROM assets a WHERE a.tenant_id = t.id)::bigint AS asset_count
 FROM tenants t
 WHERE t.id = $1;
 

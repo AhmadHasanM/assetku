@@ -107,7 +107,7 @@ func (q *Queries) GetSuperAdminForLogin(ctx context.Context, email string) (GetS
 const getTenantAdmin = `-- name: GetTenantAdmin :one
 SELECT t.id, t.name, t.active, t.created_at,
        (SELECT count(*) FROM users u WHERE u.tenant_id = t.id)::bigint AS user_count,
-       0::bigint AS asset_count -- Task 5: replace with real asset count
+       (SELECT count(*) FROM assets a WHERE a.tenant_id = t.id)::bigint AS asset_count
 FROM tenants t
 WHERE t.id = $1
 `
@@ -176,7 +176,7 @@ func (q *Queries) ListTenantUsers(ctx context.Context, tenantID uuid.UUID) ([]Li
 const listTenantsAdmin = `-- name: ListTenantsAdmin :many
 SELECT t.id, t.name, t.active, t.created_at,
        (SELECT count(*) FROM users u WHERE u.tenant_id = t.id)::bigint AS user_count,
-       0::bigint AS asset_count
+       (SELECT count(*) FROM assets a WHERE a.tenant_id = t.id)::bigint AS asset_count
 FROM tenants t
 ORDER BY t.created_at, t.id
 `
@@ -190,8 +190,6 @@ type ListTenantsAdminRow struct {
 	AssetCount int64
 }
 
-// asset_count is a placeholder until the assets table exists (Task 5 replaces
-// the 0 with a count over assets joined on tenant_id). Never select asset rows here.
 func (q *Queries) ListTenantsAdmin(ctx context.Context) ([]ListTenantsAdminRow, error) {
 	rows, err := q.db.Query(ctx, listTenantsAdmin)
 	if err != nil {

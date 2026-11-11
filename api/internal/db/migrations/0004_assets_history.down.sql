@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS asset_history;
+DROP TABLE IF EXISTS assets;
