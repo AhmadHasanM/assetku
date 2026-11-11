@@ -15,7 +15,9 @@ import (
 	"assetku/api/internal/db"
 	"assetku/api/internal/history"
 	"assetku/api/internal/httpx"
+	"assetku/api/internal/maintenance"
 	"assetku/api/internal/masterdata"
+	"assetku/api/internal/movement"
 )
 
 func createSuperAdmin(args []string) error {
@@ -73,12 +75,16 @@ func main() {
 	masterSvc := masterdata.NewService(pool, svc)
 	assetSvc := asset.NewService(pool, svc)
 	historySvc := history.NewService(pool, svc)
+	maintenanceSvc := maintenance.NewService(pool, svc)
+	movementSvc := movement.NewService(pool, svc)
 	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
 		masterSvc.Register(mux)
 		assetSvc.Register(mux)
 		historySvc.Register(mux)
+		maintenanceSvc.Register(mux)
+		movementSvc.Register(mux)
 	}})
 	log.Fatal(http.ListenAndServe(cfg.Addr, router))
 }

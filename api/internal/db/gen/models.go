@@ -54,6 +54,35 @@ type Location struct {
 	UpdatedAt   time.Time
 }
 
+type MaintenanceRecord struct {
+	ID             uuid.UUID
+	TenantID       uuid.UUID
+	AssetID        uuid.UUID
+	Date           pgtype.Date
+	Type           string
+	PerformedBy    string
+	Cost           pgtype.Numeric
+	NextDate       pgtype.Date
+	ReminderDays   pgtype.Int4
+	Notes          string
+	ReminderSentAt *time.Time
+	CreatedByName  string
+	CreatedAt      time.Time
+}
+
+type Movement struct {
+	ID               uuid.UUID
+	TenantID         uuid.UUID
+	AssetID          uuid.UUID
+	FromLocationID   uuid.NullUUID
+	FromLocationName string
+	ToLocationID     uuid.UUID
+	Date             pgtype.Date
+	MovedBy          string
+	Reason           string
+	CreatedAt        time.Time
+}
+
 type Organization struct {
 	ID        uuid.UUID
 	TenantID  uuid.UUID
