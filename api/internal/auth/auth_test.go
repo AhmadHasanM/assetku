@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"assetku/api/internal/auth"
@@ -285,6 +286,17 @@ func TestLogoutInvalidatesSession(t *testing.T) {
 	if res.StatusCode != 204 {
 		t.Fatalf("logout status %d", res.StatusCode)
 	}
+	// Replay the saved token: the server-side session must be gone.
+	req, _ := http.NewRequest("GET", e.srv.URL+"/api/auth/me", nil)
+	req.AddCookie(&http.Cookie{Name: "session", Value: saved})
+	replay, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replay.Body.Close()
+	if replay.StatusCode != 401 {
+		t.Fatalf("replayed token status %d", replay.StatusCode)
+	}
 	res = e.c.Do("GET", "/api/auth/me", nil)
 	var er errResp
 	status := res.StatusCode
@@ -337,5 +349,51 @@ func TestPasswordHelpers(t *testing.T) {
 	}
 	if !auth.CheckPassword(h, "secret-pass") || auth.CheckPassword(h, "other") || auth.CheckPassword("garbage", "x") {
 		t.Fatal("password check mismatch")
+	}
+}
+
+func TestChangePasswordRevokesOtherSessions(t *testing.T) {
+	e, seed := setup(t)
+	seed("Acme", "a@acme.test", "secret-pass")
+	a := e.c
+	b := testutil.Client(t, e.srv.URL)
+	a.Login("a@acme.test", "secret-pass").Body.Close()
+	b.Login("a@acme.test", "secret-pass").Body.Close()
+	if r := b.Do("GET", "/api/auth/me", nil); r.StatusCode != 200 {
+		t.Fatalf("B before: %d", r.StatusCode)
+	}
+
+	res := a.Do("POST", "/api/me/password", map[string]string{"current_password": "secret-pass", "new_password": "brand-new-pass"})
+	res.Body.Close()
+	if res.StatusCode != 204 {
+		t.Fatalf("change status %d", res.StatusCode)
+	}
+	rb := b.Do("GET", "/api/auth/me", nil)
+	rb.Body.Close()
+	if rb.StatusCode != 401 {
+		t.Fatalf("B after change: %d", rb.StatusCode)
+	}
+	ra := a.Do("GET", "/api/auth/me", nil)
+	ra.Body.Close()
+	if ra.StatusCode != 200 {
+		t.Fatalf("A after change: %d", ra.StatusCode)
+	}
+}
+
+func TestChangePasswordTooLong(t *testing.T) {
+	e, seed := setup(t)
+	seed("Acme", "a@acme.test", "secret-pass")
+	e.c.Login("a@acme.test", "secret-pass").Body.Close()
+	res := e.c.Do("POST", "/api/me/password", map[string]string{"current_password": "secret-pass", "new_password": strings.Repeat("x", 73)})
+	var er errResp
+	status := res.StatusCode
+	e.c.JSON(res, &er)
+	if status != 422 || er.Error.Fields["new_password"] != "too_long" {
+		t.Fatalf("got %d %+v", status, er)
+	}
+	res = e.c.Do("POST", "/api/me/password", map[string]string{"current_password": "secret-pass", "new_password": strings.Repeat("x", 72)})
+	res.Body.Close()
+	if res.StatusCode != 204 {
+		t.Fatalf("72 bytes status %d", res.StatusCode)
 	}
 }

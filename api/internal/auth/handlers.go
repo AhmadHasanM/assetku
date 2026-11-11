@@ -205,7 +205,26 @@ func (s *Service) changePassword(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if err := s.q.UpdatePassword(r.Context(), gen.UpdatePasswordParams{ID: id, PasswordHash: hash}); err != nil {
+	var current []byte
+	if ck, err := r.Cookie(httpx.SessionCookieName); err == nil {
+		current = hashToken(ck.Value)
+	}
+	tx, err := s.pool.Begin(r.Context())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(r.Context())
+	qtx := s.q.WithTx(tx)
+	if err := qtx.UpdatePassword(r.Context(), gen.UpdatePasswordParams{ID: id, PasswordHash: hash}); err != nil {
+		return err
+	}
+	// Revoke every other session of this user; the current one stays valid.
+	if err := qtx.DeleteOtherSessionsForSubject(r.Context(), gen.DeleteOtherSessionsForSubjectParams{
+		SubjectType: subjectUser, SubjectID: id, TokenHash: current,
+	}); err != nil {
+		return err
+	}
+	if err := tx.Commit(r.Context()); err != nil {
 		return err
 	}
 	w.WriteHeader(http.StatusNoContent)

@@ -34,6 +34,21 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 	return err
 }
 
+const deleteOtherSessionsForSubject = `-- name: DeleteOtherSessionsForSubject :exec
+DELETE FROM sessions WHERE subject_type = $1 AND subject_id = $2 AND token_hash <> $3
+`
+
+type DeleteOtherSessionsForSubjectParams struct {
+	SubjectType string
+	SubjectID   uuid.UUID
+	TokenHash   []byte
+}
+
+func (q *Queries) DeleteOtherSessionsForSubject(ctx context.Context, arg DeleteOtherSessionsForSubjectParams) error {
+	_, err := q.db.Exec(ctx, deleteOtherSessionsForSubject, arg.SubjectType, arg.SubjectID, arg.TokenHash)
+	return err
+}
+
 const deleteSession = `-- name: DeleteSession :exec
 DELETE FROM sessions WHERE token_hash = $1
 `

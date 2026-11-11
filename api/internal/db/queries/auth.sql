@@ -45,3 +45,6 @@ WHERE u.id = $1 AND u.active AND t.active;
 
 -- name: GetPrincipalAdmin :one
 SELECT id FROM super_admins WHERE id = $1;
+
+-- name: DeleteOtherSessionsForSubject :exec
+DELETE FROM sessions WHERE subject_type = $1 AND subject_id = $2 AND token_hash <> $3;
