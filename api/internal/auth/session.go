@@ -21,8 +21,8 @@ const (
 	sessionTTL     = 30 * 24 * time.Hour
 	sessionRenewAt = 15 * 24 * time.Hour // renew when less than this remains
 
-	subjectUser  = "user"
-	subjectAdmin = "super_admin"
+	SubjectUser  = "user"
+	SubjectAdmin = "super_admin"
 )
 
 type (
@@ -91,7 +91,7 @@ func (s *Service) SessionCookie(token string) *http.Cookie {
 	}
 }
 
-func (s *Service) clearCookie() *http.Cookie {
+func (s *Service) ClearCookie() *http.Cookie {
 	c := s.SessionCookie("")
 	c.MaxAge = -1
 	return c
@@ -123,7 +123,7 @@ func (s *Service) lookup(ctx context.Context, token, subjectType string) (uuid.U
 
 // ResolveUser implements httpx.SessionResolver.
 func (s *Service) ResolveUser(ctx context.Context, token string) (Principal, bool, error) {
-	id, refreshed, err := s.lookup(ctx, token, subjectUser)
+	id, refreshed, err := s.lookup(ctx, token, SubjectUser)
 	if err != nil {
 		return Principal{}, false, err
 	}
@@ -139,7 +139,7 @@ func (s *Service) ResolveUser(ctx context.Context, token string) (Principal, boo
 
 // ResolveAdmin implements httpx.SessionResolver.
 func (s *Service) ResolveAdmin(ctx context.Context, token string) (AdminPrincipal, bool, error) {
-	id, refreshed, err := s.lookup(ctx, token, subjectAdmin)
+	id, refreshed, err := s.lookup(ctx, token, SubjectAdmin)
 	if err != nil {
 		return AdminPrincipal{}, false, err
 	}
@@ -150,3 +150,6 @@ func (s *Service) ResolveAdmin(ctx context.Context, token string) (AdminPrincipa
 	}
 	return AdminPrincipal{ID: id}, refreshed, nil
 }
+
+// Limiter exposes the login rate limiter so other login endpoints (admin) share it.
+func (s *Service) Limiter() *RateLimiter { return s.limiter }

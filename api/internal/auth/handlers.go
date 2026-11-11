@@ -59,13 +59,13 @@ var (
 	dummyHash string
 )
 
-// burnPasswordCheck equalises timing for unknown emails.
-func burnPasswordCheck(pw string) {
+// BurnPasswordCheck equalises timing for unknown emails.
+func BurnPasswordCheck(pw string) {
 	dummyOnce.Do(func() { dummyHash, _ = HashPassword("dummy-password") })
 	CheckPassword(dummyHash, pw)
 }
 
-func clientIP(r *http.Request) string {
+func ClientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
@@ -82,7 +82,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	email := strings.TrimSpace(in.Email)
-	key := LoginKey(clientIP(r), email)
+	key := LoginKey(ClientIP(r), email)
 	if !s.limiter.Allowed(key) {
 		return errRateLimited
 	}
@@ -90,7 +90,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 
 	u, err := s.q.GetUserForLogin(r.Context(), email)
 	if errors.Is(err, pgx.ErrNoRows) {
-		burnPasswordCheck(in.Password)
+		BurnPasswordCheck(in.Password)
 		return fail()
 	}
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 		return fail()
 	}
 	s.limiter.Reset(key)
-	token, err := s.CreateSession(r.Context(), subjectUser, u.ID)
+	token, err := s.CreateSession(r.Context(), SubjectUser, u.ID)
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (s *Service) logout(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 	}
-	http.SetCookie(w, s.clearCookie())
+	http.SetCookie(w, s.ClearCookie())
 	w.WriteHeader(http.StatusNoContent)
 	return nil
 }
@@ -220,7 +220,7 @@ func (s *Service) changePassword(w http.ResponseWriter, r *http.Request) error {
 	}
 	// Revoke every other session of this user; the current one stays valid.
 	if err := qtx.DeleteOtherSessionsForSubject(r.Context(), gen.DeleteOtherSessionsForSubjectParams{
-		SubjectType: subjectUser, SubjectID: id, TokenHash: current,
+		SubjectType: SubjectUser, SubjectID: id, TokenHash: current,
 	}); err != nil {
 		return err
 	}
