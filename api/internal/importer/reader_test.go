@@ -132,3 +132,33 @@ func TestReadFileErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestReadXLSFormulaResults(t *testing.T) {
+	fh, err := os.Open("testdata/formula.xls")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fh.Close()
+	rows, err := ReadFile("formula.xls", fh)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A1 =1000*12500, A2 ="Lap"&"top", A3 =1>0, A4 =1/0, A5 =DATE(2026,1,15)
+	want := []string{"12500000", "Laptop", "TRUE", "", "2026-01-15"}
+	for i, w := range want {
+		if i >= len(rows) || len(rows[i]) == 0 {
+			t.Fatalf("missing row %d: %q", i, rows)
+		}
+		got := rows[i][0]
+		if i == 4 {
+			d, err := ParseDate(got)
+			if err != nil || d == nil || d.String() != w {
+				t.Errorf("row %d: %q -> %v, %v", i, got, d, err)
+			}
+			continue
+		}
+		if got != w {
+			t.Errorf("row %d: got %q want %q", i, got, w)
+		}
+	}
+}

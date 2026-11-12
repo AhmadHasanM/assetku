@@ -1,6 +1,7 @@
 package xls
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
 	"strconv"
@@ -8,7 +9,7 @@ import (
 	"time"
 )
 
-//content type
+// content type
 type contentHandler interface {
 	String(*WorkBook) []string
 	FirstCol() uint16
@@ -191,10 +192,43 @@ type FormulaCol struct {
 		_       uint32
 	}
 	Bts []byte
+	str string // text result, from the STRING record that follows
 }
 
+// String returns the cached formula result: the number (formatted like other
+// numeric cells), the text from the following STRING record, TRUE/FALSE, or ""
+// for errors and empty results.
 func (c *FormulaCol) String(wb *WorkBook) []string {
-	return []string{"FormulaCol"}
+	r := c.Header.Result
+	if r[6] == 0xFF && r[7] == 0xFF {
+		switch r[0] {
+		case 0:
+			return []string{c.str}
+		case 1:
+			if r[2] != 0 {
+				return []string{"TRUE"}
+			}
+			return []string{"FALSE"}
+		}
+		return []string{""}
+	}
+	f := math.Float64frombits(binary.LittleEndian.Uint64(r[:]))
+	idx := int(c.Header.IndexXf)
+	if len(wb.Xfs) > idx {
+		fNo := wb.Xfs[idx].formatNo()
+		isDate := false
+		if fNo >= 164 {
+			if fmt := wb.Formats[fNo]; fmt != nil {
+				isDate = isDateFormat(fmt.str)
+			}
+		} else {
+			isDate = isBuiltinDateFormat(fNo)
+		}
+		if isDate {
+			return []string{timeFromExcelTime(f, wb.dateMode == 1).Format(time.RFC3339)}
+		}
+	}
+	return []string{strconv.FormatFloat(f, 'f', -1, 64)}
 }
 
 type RkCol struct {
@@ -233,3 +267,9 @@ type BlankCol struct {
 func (c *BlankCol) String(wb *WorkBook) []string {
 	return []string{""}
 }
+
+// FormulaCol keeps its Col inside Header, so it needs explicit cell-position
+// methods to be registered as a cell (upstream silently dropped formula cells).
+func (c *FormulaCol) Row() uint16      { return c.Header.RowB }
+func (c *FormulaCol) FirstCol() uint16 { return c.Header.FirstColB }
+func (c *FormulaCol) LastCol() uint16  { return c.Header.FirstColB }

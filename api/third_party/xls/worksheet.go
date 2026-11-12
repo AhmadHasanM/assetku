@@ -14,15 +14,16 @@ type boundsheet struct {
 	Name    byte
 }
 
-//WorkSheet in one WorkBook
+// WorkSheet in one WorkBook
 type WorkSheet struct {
 	bs   *boundsheet
 	wb   *WorkBook
 	Name string
 	rows map[uint16]*Row
 	//NOTICE: this is the max row number of the sheet, so it should be count -1
-	MaxRow uint16
-	parsed bool
+	MaxRow      uint16
+	parsed      bool
+	lastFormula *FormulaCol
 }
 
 func (w *WorkSheet) Row(i int) *Row {
@@ -86,7 +87,16 @@ func (w *WorkSheet) parseBof(buf io.ReadSeeker, b *bof, pre *bof) *bof {
 		binary.Read(buf, binary.LittleEndian, &c.Header)
 		c.Bts = make([]byte, b.Size-20)
 		binary.Read(buf, binary.LittleEndian, &c.Bts)
+		w.lastFormula = c
 		col = c
+	case 0x207: // STRING: text result of the preceding FORMULA
+		var count uint16
+		binary.Read(buf, binary.LittleEndian, &count)
+		str, _ := w.wb.get_string(buf, count)
+		if w.lastFormula != nil {
+			w.lastFormula.str = str
+			w.lastFormula = nil
+		}
 	case 0x27e: //RK
 		col = new(RkCol)
 		binary.Read(buf, binary.LittleEndian, col)
