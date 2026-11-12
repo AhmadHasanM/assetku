@@ -3,6 +3,7 @@ package export
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -70,7 +71,7 @@ func (s *Service) export(w http.ResponseWriter, r *http.Request) error {
 	f.Page = 1
 	p := httpx.PrincipalFrom(r.Context())
 	rows, err := s.assets.ListForExport(r.Context(), p.TenantID, f)
-	if err == asset.ErrExportTooLarge {
+	if errors.Is(err, asset.ErrExportTooLarge) {
 		return errTooLarge
 	}
 	if err != nil {
