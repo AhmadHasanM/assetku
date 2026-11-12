@@ -83,6 +83,20 @@ type Movement struct {
 	CreatedAt        time.Time
 }
 
+type Notification struct {
+	ID        int64
+	TenantID  uuid.UUID
+	UserID    uuid.UUID
+	Type      string
+	TitleID   string
+	TitleEn   string
+	BodyID    string
+	BodyEn    string
+	AssetID   uuid.NullUUID
+	ReadAt    *time.Time
+	CreatedAt time.Time
+}
+
 type Organization struct {
 	ID        uuid.UUID
 	TenantID  uuid.UUID

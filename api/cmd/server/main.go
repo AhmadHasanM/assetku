@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"assetku/api/internal/admin"
 	"assetku/api/internal/asset"
@@ -18,6 +20,7 @@ import (
 	"assetku/api/internal/maintenance"
 	"assetku/api/internal/masterdata"
 	"assetku/api/internal/movement"
+	"assetku/api/internal/notify"
 )
 
 func createSuperAdmin(args []string) error {
@@ -77,6 +80,7 @@ func main() {
 	historySvc := history.NewService(pool, svc)
 	maintenanceSvc := maintenance.NewService(pool, svc)
 	movementSvc := movement.NewService(pool, svc)
+	notifySvc := notify.NewService(pool, svc)
 	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
@@ -85,6 +89,14 @@ func main() {
 		historySvc.Register(mux)
 		maintenanceSvc.Register(mux)
 		movementSvc.Register(mux)
+		notifySvc.Register(mux)
 	}})
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	go (&notify.Scheduler{Pool: pool, Loc: loc}).Start(ctx)
 	log.Fatal(http.ListenAndServe(cfg.Addr, router))
 }
