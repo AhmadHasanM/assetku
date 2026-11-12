@@ -73,6 +73,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Registered before pool.Close so it runs last: a failed listener must
+	// exit non-zero (so the supervisor restarts it) after cleanup has run.
+	exitCode := 0
+	defer func() { os.Exit(exitCode) }()
 	defer pool.Close()
 	log.Printf("%s API listening on %s", config.ProductName, cfg.Addr)
 	svc := auth.NewService(pool, cfg.CookieSecure)
@@ -115,6 +119,7 @@ func main() {
 	case err := <-serveErr:
 		if !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("server: %v", err)
+			exitCode = 1
 			return // deferred cleanup runs
 		}
 	case <-ctx.Done():
