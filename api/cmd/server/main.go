@@ -113,6 +113,10 @@ func healthcheck() error {
 }
 
 func main() {
+	// Local development: pick up api/.env when run from api/. Real env vars win.
+	if err := config.LoadDotEnv(".env"); err != nil {
+		log.Fatal(err)
+	}
 	if len(os.Args) > 1 {
 		var run func() error
 		switch os.Args[1] {

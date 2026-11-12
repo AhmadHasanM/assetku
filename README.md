@@ -137,11 +137,29 @@ Catatan IPv6: nginx hanya listen di IPv4. Bila Docker berjalan tanpa IPv6, klien
 
 ## Pengembangan lokal (tanpa Docker)
 
+Satu perintah menjalankan database, API, dan web. `Ctrl+C` mematikan ketiganya:
+
 ```bash
-cd api && go run ./cmd/devdb      # Postgres embedded di :55432
-cd api && DATABASE_URL='postgres://postgres:postgres@localhost:55432/assetku?sslmode=disable' \
-  APP_BASE_URL=http://localhost:3000 COOKIE_SECURE=false go run ./cmd/server
+./dev.sh    # buka http://localhost:3000
+```
+
+`dev.sh` membuat `api/.env` dari `api/.env.example` bila belum ada, dan menjalankan `npm install` bila `web/node_modules` belum ada.
+
+Menjalankan satu per satu, masing-masing di terminal sendiri:
+
+```bash
+cd api && go run ./cmd/devdb           # Postgres embedded di :55432, data di ~/.cache/assetku-devdb
+cd api && go run ./cmd/server          # API di :8080, membaca api/.env
 cd web && npm install && npm run dev   # http://localhost:3000, /api diproxy ke :8080
+```
+
+API membaca `api/.env` bila dijalankan dari folder `api/`. Variabel yang sudah di-set di shell tetap menang. Produksi tidak memakai file ini.
+
+Akun pertama di database baru (dari folder `api/`):
+
+```bash
+go run ./cmd/server seed-demo --tenant "PT Demo" --email demo@assetku.test --password demo12345
+go run ./cmd/server create-superadmin --email admin@assetku.test --name "Super Admin" --password admin12345
 ```
 
 Test:
