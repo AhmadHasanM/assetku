@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -58,12 +59,76 @@ func createSuperAdmin(args []string) error {
 	return nil
 }
 
+func seedDemo(args []string) error {
+	fs := flag.NewFlagSet("seed-demo", flag.ContinueOnError)
+	tenant := fs.String("tenant", "", "tenant name")
+	email := fs.String("email", "", "user email")
+	password := fs.String("password", "", "user password")
+	name := fs.String("name", "Demo User", "user name")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *tenant == "" || *email == "" || *password == "" {
+		return fmt.Errorf("usage: server seed-demo --tenant T --email E --password P [--name N]")
+	}
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	if err := db.Migrate(cfg.DatabaseURL); err != nil {
+		return err
+	}
+	pool, err := db.Open(context.Background(), cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	if err := admin.SeedDemo(context.Background(), pool, admin.DemoSeed{Tenant: *tenant, Email: *email, Password: *password, Name: *name}); err != nil {
+		return err
+	}
+	fmt.Printf("demo tenant %q ready, log in as %s\n", *tenant, *email)
+	return nil
+}
+
+// healthcheck probes the local /api/health. The distroless image has no shell
+// or curl, so the compose healthcheck runs `/server healthcheck`.
+func healthcheck() error {
+	addr := os.Getenv("ADDR")
+	if addr == "" {
+		addr = ":8080"
+	}
+	if strings.HasPrefix(addr, ":") {
+		addr = "127.0.0.1" + addr
+	}
+	c := http.Client{Timeout: 3 * time.Second}
+	res, err := c.Get("http://" + addr + "/api/health")
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("health: status %d", res.StatusCode)
+	}
+	return nil
+}
+
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "create-superadmin" {
-		if err := createSuperAdmin(os.Args[2:]); err != nil {
-			log.Fatal(err)
+	if len(os.Args) > 1 {
+		var run func() error
+		switch os.Args[1] {
+		case "create-superadmin":
+			run = func() error { return createSuperAdmin(os.Args[2:]) }
+		case "seed-demo":
+			run = func() error { return seedDemo(os.Args[2:]) }
+		case "healthcheck":
+			run = healthcheck
 		}
-		return
+		if run != nil {
+			if err := run(); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
 	}
 	cfg, err := config.Load()
 	if err != nil {

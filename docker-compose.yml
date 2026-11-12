@@ -1,0 +1,116 @@
+# AssetKu production stack: `docker compose up -d` (configuration in .env, see .env.example).
+name: assetku
+
+x-tz: &tz
+  TZ: ${TZ:-Asia/Jakarta}
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      <<: *tz
+      POSTGRES_USER: assetku
+      POSTGRES_DB: assetku
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assetku -d assetku"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    image: assetku-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *tz
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
+      # Used for the QR code URL printed on asset labels.
+      APP_BASE_URL: ${APP_BASE_URL:?set APP_BASE_URL in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      # Only nginx on the compose network may set X-Real-IP (login rate limit).
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+    healthcheck:
+      test: ["CMD", "/server", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  web:
+    build: ./web
+    image: assetku-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      <<: *tz
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      <<: *tz
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # certbot output (README: `certbot certonly --standalone --cert-name assetku ...`).
+      - ${CERTS_DIR:-/etc/letsencrypt}:/etc/letsencrypt:ro
+
+  # Daily pg_dump (custom format) into the `backups` volume, keeping 14 days.
+  backup:
+    image: postgres:17
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *tz
+      PGHOST: db
+      PGUSER: assetku
+      PGDATABASE: assetku
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      BACKUP_KEEP_DAYS: 14
+    volumes:
+      - backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -u
+        echo "backup: daily pg_dump to /backups, keeping $${BACKUP_KEEP_DAYS} days"
+        while true; do
+          f="/backups/assetku-$$(date +%Y%m%d-%H%M%S).dump"
+          if pg_dump --format=custom --file="$$f.partial" && mv "$$f.partial" "$$f"; then
+            echo "backup: wrote $$f"
+          else
+            echo "backup: pg_dump failed" >&2
+            rm -f "$$f.partial"
+          fi
+          # Older than BACKUP_KEEP_DAYS full days: one dump per day, 14 kept.
+          find /backups -name 'assetku-*.dump' -type f -mtime +$$((BACKUP_KEEP_DAYS - 1)) -delete
+          sleep 86400
+        done
+
+volumes:
+  pgdata:
+  backups:

@@ -6,3 +6,6 @@ web/.next/
 *.test
 /api/bin/
 /.devdb/
+/web/test-results/
+/web/playwright-report/
+/web/blob-report/

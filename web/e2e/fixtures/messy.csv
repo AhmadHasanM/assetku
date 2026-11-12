@@ -1,0 +1,8 @@
+﻿Daftar Inventaris PT Demo;;;;;;;
+;;;;;;;
+NAMA_BARANG ; Kategori;Merk;No Seri; Status ;Lokasi;Harga Beli;Tanggal Beli
+Laptop Dell Latitude 5420 ;Laptop;Dell; DL-5420-001 ;Digunakan;Kantor Pusat Jakarta;Rp 12.500.000;15/03/2023
+Proyektor Epson EB-X51;Elektronik;Epson;EP-X51-7781;Rusak;Kantor Pusat Jakarta;Rp 6.750.000;02/11/2022
+Toyota Avanza B 1234 XYZ;Kendaraan;Toyota;MHKM1BA3JNK012345;Perbaikan;Kantor Pusat Jakarta;Rp 245.000.000;20/01/2021
+Kursi Kerja Ergonomis;Furniture;Informa;;Tersedia;Kantor Pusat Jakarta;Rp 1.250.000;05/06/2024
+Printer HP LaserJet M211;Peralatan IT;HP;HP-M211-0042;Tersedia;Kantor Pusat Jakarta;Rp 2.300.000;10/08/2023
