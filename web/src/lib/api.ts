@@ -42,12 +42,9 @@ export function readCookie(name: string): string | null {
 function loginRedirect(path: string) {
   if (typeof window === "undefined") return
   const { pathname, search } = window.location
-  if (path.startsWith("/api/admin/")) {
-    if (!pathname.startsWith("/admin/login")) window.location.assign("/admin/login")
-    return
-  }
-  if (pathname === "/login") return
-  window.location.assign(`/login?next=${encodeURIComponent(pathname + search)}`)
+  const login = path.startsWith("/api/admin/") ? "/admin/login" : "/login"
+  if (pathname === login) return
+  window.location.assign(`${login}?next=${encodeURIComponent(pathname + search)}`)
 }
 /* eslint-enable @next/next/no-location-assign-relative-destination */
 

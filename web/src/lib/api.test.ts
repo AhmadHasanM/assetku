@@ -71,6 +71,13 @@ describe("api", () => {
     expect(location.assign).toHaveBeenCalledWith("/login?next=%2Fassets%2F1")
   })
 
+  it("sends a 401 from an admin endpoint to the admin login with next", async () => {
+    location.pathname = "/admin/tenants/t1"
+    fetchMock.mockResolvedValue(jsonResponse(401, { error: { code: "unauthenticated", message: "" } }))
+    await expect(api("/api/admin/tenants/t1/users")).rejects.toBeInstanceOf(ApiError)
+    expect(location.assign).toHaveBeenCalledWith("/admin/login?next=%2Fadmin%2Ftenants%2Ft1")
+  })
+
   it("keeps the query string in next", async () => {
     location.search = "?tab=history"
     fetchMock.mockResolvedValue(jsonResponse(401, { error: { code: "unauthorized", message: "" } }))

@@ -13,13 +13,18 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { api } from "@/lib/api"
+import { ADMIN_ME_QUERY_KEY, type AdminMeResponse } from "@/lib/admin"
 import { ME_QUERY_KEY } from "@/lib/me"
 import { writeLocaleCookie } from "@/lib/preferences"
-import { safeNext } from "@/lib/safe-next"
+import { safeAdminNext, safeNext } from "@/lib/safe-next"
 import type { MeResponse } from "@/lib/types"
 import { useErrorMessage } from "@/lib/use-error-message"
 
-export function LoginForm({ next }: { next: string | null }) {
+/**
+ * Email + password sign-in. `admin` signs in a super admin (/api/admin/auth/login)
+ * and keeps the current language/theme, since admins have no saved preferences.
+ */
+export function LoginForm({ next, admin = false }: { next: string | null; admin?: boolean }) {
   const t = useTranslations("auth")
   const errorMessage = useErrorMessage()
   const router = useRouter()
@@ -42,11 +47,20 @@ export function LoginForm({ next }: { next: string | null }) {
   const onSubmit = async (values: Values) => {
     setFormError(null)
     try {
-      const { user } = await api<MeResponse>("/api/auth/login", { method: "POST", json: values })
-      qc.setQueryData(ME_QUERY_KEY, user)
-      writeLocaleCookie(user.locale)
-      setTheme(user.theme)
-      router.replace(safeNext(next))
+      if (admin) {
+        const res = await api<AdminMeResponse>("/api/admin/auth/login", { method: "POST", json: values })
+        // One session cookie per browser: drop any cached tenant user.
+        qc.clear()
+        qc.setQueryData(ADMIN_ME_QUERY_KEY, res.admin)
+        router.replace(safeAdminNext(next))
+      } else {
+        const { user } = await api<MeResponse>("/api/auth/login", { method: "POST", json: values })
+        qc.clear()
+        qc.setQueryData(ME_QUERY_KEY, user)
+        writeLocaleCookie(user.locale)
+        setTheme(user.theme)
+        router.replace(safeNext(next))
+      }
       router.refresh()
     } catch (err) {
       setFormError(errorMessage(err))

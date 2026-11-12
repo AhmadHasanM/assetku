@@ -27,8 +27,10 @@ describe("proxy", () => {
   })
 
   it("sends admin panel routes to the admin login", () => {
-    expect(run("/admin/tenants").headers.get("location")).toBe("http://localhost:3000/admin/login")
-    expect(run("/admin").headers.get("location")).toBe("http://localhost:3000/admin/login")
+    expect(run("/admin/tenants").headers.get("location")).toBe(
+      "http://localhost:3000/admin/login?next=%2Fadmin%2Ftenants",
+    )
+    expect(run("/admin").headers.get("location")).toBe("http://localhost:3000/admin/login?next=%2Fadmin")
     expect(run("/admin/login").headers.get("location")).toBeNull()
   })
 })
