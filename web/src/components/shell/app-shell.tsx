@@ -1,5 +1,6 @@
 "use client"
 
+import { ImportDialog } from "@/components/import/import-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMe } from "@/lib/me"
 import { MobileNav } from "./mobile-nav"
@@ -28,6 +29,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex min-w-0 flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
+      {/* Shell-level so an import keeps polling (and toasts) on any page. */}
+      <ImportDialog />
     </div>
   )
 }

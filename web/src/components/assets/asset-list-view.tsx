@@ -71,9 +71,11 @@ export function AssetListView() {
   const change = useCallback((patch: Partial<AssetFilters>) => navigate(updateFilters(latest.current, patch)), [navigate])
   const reset = useCallback(() => navigate(DEFAULT_FILTERS), [navigate])
 
+  // The request uses the parsed filters, so junk URL params never reach the API.
+  const listQuery = toSearchParams(filters).toString()
   const list = useQuery({
-    queryKey: ["assets", "list", query],
-    queryFn: () => api<AssetListResponse>(`/api/assets${query ? `?${query}` : ""}`),
+    queryKey: ["assets", "list", listQuery],
+    queryFn: () => api<AssetListResponse>(`/api/assets${listQuery ? `?${listQuery}` : ""}`),
     placeholderData: (prev) => prev,
   })
   // Counts are tenant-wide (spec §6): they ignore every other filter.

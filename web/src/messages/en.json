@@ -244,7 +244,14 @@
       "filteredTitle": "No assets match these filters",
       "filteredHint": "Try a different search or clear the filters."
     },
-    "loadFailed": "Could not load assets."
+    "loadFailed": "Could not load assets.",
+    "exportMenu": {
+      "csv": "CSV",
+      "xlsx": "Excel (.xlsx)",
+      "pdf": "PDF",
+      "preparing": "Preparing export…",
+      "label": "Export format"
+    }
   },
   "assetForm": {
     "addTitle": "Add Asset",
@@ -436,5 +443,53 @@
     },
     "delete": "Delete",
     "deleting": "Deleting…"
+  },
+  "import": {
+    "title": "Import Assets",
+    "description": "Upload a .xlsx, .xls, or .csv spreadsheet (max 10 MB, 10,000 rows).",
+    "dropTitle": "Drop a file here or choose one",
+    "dropHint": ".xlsx, .xls, or .csv, up to 10 MB",
+    "chooseFile": "Choose file",
+    "template": "Download template",
+    "start": "Start Import",
+    "uploading": "Uploading…",
+    "processing": "Processing rows…",
+    "progressRows": "{processed, number} of {total, number} rows",
+    "progressLabel": "Import progress",
+    "closeHint": "You can close this dialog. The import keeps running and you will be notified when it finishes.",
+    "doneTitle": "Import finished",
+    "failedTitle": "Import failed",
+    "tryAgain": "Import another file",
+    "downloadReport": "Download CSV report",
+    "toastDone": "Import finished: {created, number} new, {updated, number} updated, {skipped, number} skipped.",
+    "toastFailed": "Import failed: {reason}",
+    "viewResult": "View result",
+    "counts": {
+      "created": "New",
+      "updated": "Updated",
+      "unchanged": "Unchanged",
+      "skipped": "Skipped"
+    },
+    "sections": {
+      "unknownColumns": "Unrecognized columns",
+      "unmatchedOrganizations": "Unmatched organizations",
+      "unrecognizedValues": "Unrecognized values",
+      "createdSuppliers": "New suppliers",
+      "createdLocations": "New locations",
+      "skippedRows": "Skipped rows"
+    },
+    "rows": "{count, plural, one {# row} other {# rows}}",
+    "row": "Row {row}",
+    "emptyValue": "(empty)",
+    "reasons": {
+      "missing_name": "Asset name is empty",
+      "duplicate_tag_in_file": "Duplicate Asset Tag in the file",
+      "invalid_value": "Invalid value: {field}",
+      "error": "Could not be saved"
+    },
+    "jobErrors": {
+      "server_restarted": "The server restarted during the import. Rows already processed were kept.",
+      "job_data_missing": "The import data is no longer available. Upload the file again."
+    }
   }
 }

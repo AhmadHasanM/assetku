@@ -244,7 +244,14 @@
       "filteredTitle": "Tidak ada asset yang cocok dengan filter",
       "filteredHint": "Coba kata kunci lain atau hapus filter."
     },
-    "loadFailed": "Asset tidak dapat dimuat."
+    "loadFailed": "Asset tidak dapat dimuat.",
+    "exportMenu": {
+      "csv": "CSV",
+      "xlsx": "Excel (.xlsx)",
+      "pdf": "PDF",
+      "preparing": "Menyiapkan export…",
+      "label": "Format export"
+    }
   },
   "assetForm": {
     "addTitle": "Tambah Asset",
@@ -436,5 +443,53 @@
     },
     "delete": "Hapus",
     "deleting": "Menghapus…"
+  },
+  "import": {
+    "title": "Import Asset",
+    "description": "Unggah spreadsheet .xlsx, .xls, atau .csv (maks. 10 MB, 10.000 baris).",
+    "dropTitle": "Tarik file ke sini atau pilih file",
+    "dropHint": ".xlsx, .xls, atau .csv, maks. 10 MB",
+    "chooseFile": "Pilih file",
+    "template": "Unduh template",
+    "start": "Mulai Import",
+    "uploading": "Mengunggah…",
+    "processing": "Memproses baris…",
+    "progressRows": "{processed, number} dari {total, number} baris",
+    "progressLabel": "Progress import",
+    "closeHint": "Dialog boleh ditutup. Import tetap berjalan dan Anda akan diberi tahu saat selesai.",
+    "doneTitle": "Import selesai",
+    "failedTitle": "Import gagal",
+    "tryAgain": "Import file lain",
+    "downloadReport": "Unduh laporan CSV",
+    "toastDone": "Import selesai: {created, number} baru, {updated, number} diperbarui, {skipped, number} dilewati.",
+    "toastFailed": "Import gagal: {reason}",
+    "viewResult": "Lihat hasil",
+    "counts": {
+      "created": "Baru",
+      "updated": "Diperbarui",
+      "unchanged": "Tidak berubah",
+      "skipped": "Dilewati"
+    },
+    "sections": {
+      "unknownColumns": "Kolom tidak dikenali",
+      "unmatchedOrganizations": "Organisasi tidak cocok",
+      "unrecognizedValues": "Nilai tidak dikenali",
+      "createdSuppliers": "Pemasok baru",
+      "createdLocations": "Lokasi baru",
+      "skippedRows": "Baris dilewati"
+    },
+    "rows": "{count, plural, other {# baris}}",
+    "row": "Baris {row}",
+    "emptyValue": "(kosong)",
+    "reasons": {
+      "missing_name": "Nama asset kosong",
+      "duplicate_tag_in_file": "Asset Tag duplikat di file",
+      "invalid_value": "Nilai tidak valid: {field}",
+      "error": "Gagal disimpan"
+    },
+    "jobErrors": {
+      "server_restarted": "Server dimulai ulang saat import berjalan. Baris yang sudah diproses tetap tersimpan.",
+      "job_data_missing": "Data import tidak tersedia lagi. Unggah ulang file."
+    }
   }
 }

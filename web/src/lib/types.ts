@@ -121,3 +121,30 @@ export interface Asset extends Required<Omit<AssetInput, "category" | "status">>
   created_at: string
   updated_at: string
 }
+
+/** GET /api/imports/{id}. result is null until the job is done. */
+export type ImportStatus = "queued" | "running" | "done" | "failed"
+
+export interface ImportResultData {
+  created: number
+  updated: number
+  unchanged: number
+  skipped: number
+  unknown_columns: string[]
+  unmatched_organizations: { name: string; rows: number }[]
+  unrecognized_values: { field: string; value: string; rows: number }[]
+  /** reason: missing_name | duplicate_tag_in_file | invalid_value:<field> | error */
+  skipped_rows: { row: number; reason: string }[]
+  created_suppliers: string[]
+  created_locations: string[]
+}
+
+export interface ImportJob {
+  id: string
+  status: ImportStatus
+  total_rows: number
+  processed_rows: number
+  result: ImportResultData | null
+  /** Failure code, e.g. server_restarted; empty unless failed. */
+  error: string
+}
