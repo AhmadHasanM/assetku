@@ -14,8 +14,8 @@ import {
 import type { AssetListItem } from "@/lib/types"
 
 interface Props {
-  asset: Pick<AssetListItem, "id" | "name">
-  onDelete: (asset: Pick<AssetListItem, "id" | "name">) => void
+  asset: Pick<AssetListItem, "id" | "name" | "asset_tag">
+  onDelete: (asset: Pick<AssetListItem, "id" | "name" | "asset_tag">) => void
 }
 
 /** The per-row menu: View Details, Edit, Delete. */

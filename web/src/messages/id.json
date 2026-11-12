@@ -224,7 +224,7 @@
     "delete": "Hapus",
     "deleteDialog": {
       "title": "Hapus asset ini?",
-      "description": "\"{name}\" beserta riwayat, catatan maintenance, dan perpindahannya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.",
+      "description": "\"{name}\" ({tag}) beserta riwayat, catatan maintenance, dan perpindahannya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.",
       "confirm": "Hapus",
       "deleting": "Menghapus…",
       "done": "Asset dihapus."
@@ -306,5 +306,135 @@
       "stay": "Lanjut mengisi",
       "confirm": "Keluar"
     }
+  },
+  "history": {
+    "asset_created": "{actor} menambahkan asset ini",
+    "asset_imported_created": "{actor} menambahkan asset ini lewat import",
+    "asset_imported_updated": "{actor} memperbarui asset lewat import: {fields}",
+    "status_changed": "{actor} mengubah status dari {from} ke {to}",
+    "location_changed": "{actor} mengubah lokasi: {from} → {to}",
+    "assignee_changed": "{actor} mengubah pemegang: {from} → {to}",
+    "details_updated": "{actor} mengubah {fields}",
+    "label_printed": "{actor} mencetak label",
+    "bast_printed": "{actor} mencetak BAST {number}",
+    "maintenance_added": "{actor} mencatat maintenance {type} tanggal {date}",
+    "maintenance_deleted": "{actor} menghapus catatan maintenance {type} tanggal {date}",
+    "movement_added": "{actor} memindahkan asset: {from} → {to}",
+    "movement_deleted": "{actor} menghapus catatan perpindahan {from} → {to} tanggal {date}",
+    "unknown": "{actor} mengubah asset ini",
+    "reason": "(alasan: {reason})",
+    "system": "Sistem",
+    "fields": {
+      "location_id": "Lokasi",
+      "organization_id": "Organisasi",
+      "supplier_id": "Pemasok"
+    }
+  },
+  "assetDetail": {
+    "notFoundTitle": "Asset tidak ditemukan",
+    "notFoundHint": "Asset ini tidak ada, sudah dihapus, atau milik perusahaan lain.",
+    "loadFailed": "Gagal memuat asset ini.",
+    "back": "Kembali ke daftar asset",
+    "qrLabel": "Kode QR halaman asset {tag}",
+    "actions": {
+      "label": "Generate Label",
+      "bast": "Print BAST",
+      "edit": "Edit",
+      "delete": "Hapus",
+      "more": "Aksi asset",
+      "labelDone": "Label diunduh.",
+      "generating": "Membuat PDF…"
+    },
+    "header": {
+      "category": "Kategori",
+      "serial": "Serial",
+      "manufacturer": "Pabrikan",
+      "model": "Model",
+      "location": "Lokasi",
+      "assignee": "Pemegang"
+    },
+    "tabs": {
+      "info": "Informasi",
+      "history": "Riwayat",
+      "maintenance": "Maintenance",
+      "movements": "Perpindahan"
+    },
+    "info": {
+      "expired": "Kedaluwarsa",
+      "months": "{count} bulan"
+    },
+    "historyTab": {
+      "empty": "Belum ada riwayat.",
+      "loadMore": "Muat lagi",
+      "loadFailed": "Riwayat tidak dapat dimuat."
+    },
+    "maintenance": {
+      "add": "Tambah Catatan",
+      "next": "Maintenance berikutnya",
+      "nextHint": "Dari catatan {type} tanggal {date}",
+      "empty": "Belum ada catatan maintenance.",
+      "loadFailed": "Catatan maintenance tidak dapat dimuat.",
+      "dialogTitle": "Tambah catatan maintenance",
+      "fields": {
+        "date": "Tanggal",
+        "type": "Jenis",
+        "performed_by": "Pelaksana",
+        "cost": "Biaya",
+        "next_date": "Maintenance berikutnya",
+        "reminder_days": "Ingatkan (hari sebelumnya)",
+        "notes": "Catatan"
+      },
+      "typePlaceholder": "Pilih jenis",
+      "reminderHint": "Pengingat dikirim H-{days}.",
+      "reminderShort": "Pengingat H-{days}",
+      "by": "Oleh {name}",
+      "recordedBy": "Dicatat oleh {name}",
+      "saved": "Catatan maintenance tersimpan.",
+      "deleteTitle": "Hapus catatan maintenance?",
+      "deleteDescription": "Catatan {type} tanggal {date} akan dihapus permanen.",
+      "deleteLabel": "Hapus catatan {type} tanggal {date}",
+      "deleted": "Catatan maintenance dihapus."
+    },
+    "movements": {
+      "add": "Log Movement",
+      "empty": "Belum ada perpindahan.",
+      "loadFailed": "Perpindahan tidak dapat dimuat.",
+      "dialogTitle": "Log Movement",
+      "dialogDescription": "Lokasi asset akan berubah ke lokasi tujuan.",
+      "from": "Dari",
+      "fields": {
+        "to_location_id": "Lokasi tujuan",
+        "date": "Tanggal",
+        "moved_by": "Dipindahkan oleh",
+        "reason": "Alasan"
+      },
+      "currentLocation": "Lokasi saat ini: {name}",
+      "by": "Oleh {name}",
+      "saved": "Perpindahan tercatat.",
+      "deleteTitle": "Hapus catatan perpindahan?",
+      "deleteDescription": "Catatan {from} → {to} akan dihapus. Lokasi asset tidak dikembalikan.",
+      "deleteLabel": "Hapus perpindahan {from} → {to}",
+      "deleted": "Catatan perpindahan dihapus."
+    },
+    "bast": {
+      "title": "Print BAST",
+      "description": "Isi data serah terima, lalu unduh PDF.",
+      "number": "Nomor",
+      "date": "Tanggal Serah Terima",
+      "firstParty": "Pihak Pertama",
+      "secondParty": "Pihak Kedua",
+      "first_name": "Nama Pihak Pertama",
+      "first_position": "Jabatan Pihak Pertama",
+      "second_name": "Nama Pihak Kedua",
+      "second_position": "Jabatan Pihak Kedua",
+      "second_department": "Departemen Pihak Kedua",
+      "condition": "Kondisi Barang",
+      "warranty": "Garansi",
+      "notes": "Catatan Tambahan",
+      "submit": "Unduh BAST",
+      "done": "BAST diunduh."
+    },
+    "delete": "Hapus",
+    "deleting": "Menghapus…"
   }
 }

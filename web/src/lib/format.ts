@@ -49,3 +49,9 @@ export function formatDate(iso: string | null | undefined, locale: Locale): stri
   if (!month || d < 1 || d > 31) return EMPTY
   return `${String(d).padStart(2, "0")} ${month} ${y}`
 }
+
+/** Today's date in Asia/Jakarta as yyyy-mm-dd (the API's "today"). */
+export function todayJakarta(now: Date = new Date()): string {
+  const parts = Object.fromEntries(jakartaParts.formatToParts(now).map((p) => [p.type, p.value]))
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`
+}

@@ -6,8 +6,6 @@ import { Controller, useForm, useWatch, type Control } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useLocale, useTranslations } from "next-intl"
-import { CalendarDays } from "lucide-react"
-import { enUS, id as idLocale } from "react-day-picker/locale"
 import { toast } from "sonner"
 import { cn } from "cn"
 import {
@@ -21,11 +19,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { api, ApiError } from "@/lib/api"
@@ -43,7 +39,8 @@ import {
   type AssetFormField,
   type AssetFormValues,
 } from "./asset-schema"
-import { INPUT_TRIGGER_CLASS, MasterCombobox, PLACEHOLDER_CLASS } from "./master-combobox"
+import { DateInput } from "./date-input"
+import { MasterCombobox } from "./master-combobox"
 
 /**
  * Warns before leaving while dirty: beforeunload for reload/close, and a
@@ -98,82 +95,6 @@ function useLeaveGuard(dirty: boolean) {
     },
     stay: () => setPending(null),
   }
-}
-
-const pad = (n: number) => String(n).padStart(2, "0")
-const toIso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-function fromIso(s: string): Date | undefined {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
-  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : undefined
-}
-
-interface DateInputProps {
-  id: string
-  value: string
-  onChange: (v: string) => void
-  onBlur: () => void
-  invalid: boolean
-}
-
-/** Date picker showing "dd MMM yyyy"; the value is yyyy-mm-dd or "". */
-function DateInput({ id, value, onChange, onBlur, invalid }: DateInputProps) {
-  const t = useTranslations("assetForm")
-  const locale = useLocale() as Locale
-  const [open, setOpen] = useState(false)
-  const selected = fromIso(value)
-  const thisYear = new Date().getFullYear()
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next)
-        if (!next) onBlur()
-      }}
-    >
-      <PopoverTrigger asChild>
-        <Button
-          id={id}
-          type="button"
-          variant="ghost"
-          aria-invalid={invalid || undefined}
-          className={cn(INPUT_TRIGGER_CLASS, !value && PLACEHOLDER_CLASS)}
-        >
-          <span className="truncate">{value ? formatDate(value, locale) : t("placeholders.date")}</span>
-          <CalendarDays className="text-muted-foreground" aria-hidden />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-2">
-        <Calendar
-          mode="single"
-          captionLayout="dropdown"
-          // 44px day cells: tap target minimum (7 x 44px still fits a 360px screen).
-          className="[--cell-size:--spacing(11)]"
-          locale={locale === "en" ? enUS : idLocale}
-          selected={selected}
-          defaultMonth={selected}
-          startMonth={new Date(thisYear - 40, 0)}
-          endMonth={new Date(thisYear + 5, 11)}
-          onSelect={(d) => {
-            onChange(d ? toIso(d) : "")
-            setOpen(false)
-          }}
-        />
-        {value && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onChange("")
-              setOpen(false)
-            }}
-          >
-            {t("clearDate")}
-          </Button>
-        )}
-      </PopoverContent>
-    </Popover>
-  )
 }
 
 function WarrantyPreview({ control }: { control: Control<AssetFormValues> }) {

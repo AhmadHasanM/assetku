@@ -17,7 +17,7 @@ interface Props {
   sort: AssetFilters["sort"]
   dir: AssetFilters["dir"]
   onSort: (key: SortKey) => void
-  onDelete: (asset: Pick<AssetListItem, "id" | "name">) => void
+  onDelete: (asset: Pick<AssetListItem, "id" | "name" | "asset_tag">) => void
 }
 
 /** Desktop list (md and up): sortable headers, clickable rows. */

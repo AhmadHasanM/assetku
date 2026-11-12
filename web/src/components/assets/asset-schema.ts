@@ -19,6 +19,9 @@ function parseIsoDate(s: string | undefined): { y: number; m: number; d: number 
   return { y, m, d }
 }
 
+/** True for a real calendar date in yyyy-mm-dd form (the API rejects anything else with 400). */
+export const isIsoDate = (s: string): boolean => parseIsoDate(s) !== null
+
 const pad = (n: number, w = 2) => String(n).padStart(w, "0")
 
 /**

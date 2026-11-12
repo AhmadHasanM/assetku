@@ -49,7 +49,7 @@ export function AssetListView() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [deleting, setDeleting] = useState<Pick<AssetListItem, "id" | "name"> | null>(null)
+  const [deleting, setDeleting] = useState<Pick<AssetListItem, "id" | "name" | "asset_tag"> | null>(null)
 
   const query = searchParams.toString()
   const filters = useMemo(() => parseFilters(new URLSearchParams(query)), [query])

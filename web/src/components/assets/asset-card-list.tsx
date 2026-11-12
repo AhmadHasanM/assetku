@@ -9,7 +9,7 @@ import { StatusChip } from "./status-chip"
 
 interface Props {
   items: AssetListItem[]
-  onDelete: (asset: Pick<AssetListItem, "id" | "name">) => void
+  onDelete: (asset: Pick<AssetListItem, "id" | "name" | "asset_tag">) => void
 }
 
 /** Mobile list (below md): one card per asset. */

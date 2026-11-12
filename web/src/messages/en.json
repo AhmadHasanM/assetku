@@ -224,7 +224,7 @@
     "delete": "Delete",
     "deleteDialog": {
       "title": "Delete this asset?",
-      "description": "\"{name}\" and its history, maintenance records, and movements will be permanently deleted. This cannot be undone.",
+      "description": "\"{name}\" ({tag}) and its history, maintenance records, and movements will be permanently deleted. This cannot be undone.",
       "confirm": "Delete",
       "deleting": "Deleting…",
       "done": "Asset deleted."
@@ -306,5 +306,135 @@
       "stay": "Keep editing",
       "confirm": "Leave"
     }
+  },
+  "history": {
+    "asset_created": "{actor} created this asset",
+    "asset_imported_created": "{actor} created this asset by import",
+    "asset_imported_updated": "{actor} updated this asset by import: {fields}",
+    "status_changed": "{actor} changed the status from {from} to {to}",
+    "location_changed": "{actor} changed the location: {from} → {to}",
+    "assignee_changed": "{actor} changed the assignee: {from} → {to}",
+    "details_updated": "{actor} updated {fields}",
+    "label_printed": "{actor} printed a label",
+    "bast_printed": "{actor} printed BAST {number}",
+    "maintenance_added": "{actor} logged {type} maintenance on {date}",
+    "maintenance_deleted": "{actor} deleted the {type} maintenance record of {date}",
+    "movement_added": "{actor} moved the asset: {from} → {to}",
+    "movement_deleted": "{actor} deleted the movement record {from} → {to} of {date}",
+    "unknown": "{actor} changed this asset",
+    "reason": "(reason: {reason})",
+    "system": "System",
+    "fields": {
+      "location_id": "Location",
+      "organization_id": "Organization",
+      "supplier_id": "Supplier"
+    }
+  },
+  "assetDetail": {
+    "notFoundTitle": "Asset not found",
+    "notFoundHint": "This asset does not exist, was deleted, or belongs to another company.",
+    "loadFailed": "This asset could not be loaded.",
+    "back": "Back to assets",
+    "qrLabel": "QR code of the asset page for {tag}",
+    "actions": {
+      "label": "Generate Label",
+      "bast": "Print BAST",
+      "edit": "Edit",
+      "delete": "Delete",
+      "more": "Asset actions",
+      "labelDone": "Label downloaded.",
+      "generating": "Generating PDF…"
+    },
+    "header": {
+      "category": "Category",
+      "serial": "Serial",
+      "manufacturer": "Manufacturer",
+      "model": "Model",
+      "location": "Location",
+      "assignee": "Assigned to"
+    },
+    "tabs": {
+      "info": "Information",
+      "history": "History",
+      "maintenance": "Maintenance",
+      "movements": "Movements"
+    },
+    "info": {
+      "expired": "Expired",
+      "months": "{count, plural, one {# month} other {# months}}"
+    },
+    "historyTab": {
+      "empty": "No history yet.",
+      "loadMore": "Load more",
+      "loadFailed": "History could not be loaded."
+    },
+    "maintenance": {
+      "add": "Add Record",
+      "next": "Next maintenance",
+      "nextHint": "From the {type} record of {date}",
+      "empty": "No maintenance records yet.",
+      "loadFailed": "Maintenance records could not be loaded.",
+      "dialogTitle": "Add maintenance record",
+      "fields": {
+        "date": "Date",
+        "type": "Type",
+        "performed_by": "Performed By",
+        "cost": "Cost",
+        "next_date": "Next Maintenance",
+        "reminder_days": "Remind (days before)",
+        "notes": "Notes"
+      },
+      "typePlaceholder": "Choose a type",
+      "reminderHint": "A reminder is sent {days} days before.",
+      "reminderShort": "Reminder {days} days before",
+      "by": "By {name}",
+      "recordedBy": "Logged by {name}",
+      "saved": "Maintenance record saved.",
+      "deleteTitle": "Delete maintenance record?",
+      "deleteDescription": "The {type} record of {date} will be permanently deleted.",
+      "deleteLabel": "Delete the {type} record of {date}",
+      "deleted": "Maintenance record deleted."
+    },
+    "movements": {
+      "add": "Log Movement",
+      "empty": "No movements yet.",
+      "loadFailed": "Movements could not be loaded.",
+      "dialogTitle": "Log Movement",
+      "dialogDescription": "The asset's location changes to the destination.",
+      "from": "From",
+      "fields": {
+        "to_location_id": "Destination",
+        "date": "Date",
+        "moved_by": "Moved By",
+        "reason": "Reason"
+      },
+      "currentLocation": "Current location: {name}",
+      "by": "By {name}",
+      "saved": "Movement logged.",
+      "deleteTitle": "Delete movement record?",
+      "deleteDescription": "The record {from} → {to} will be deleted. The asset's location is not reverted.",
+      "deleteLabel": "Delete movement {from} → {to}",
+      "deleted": "Movement record deleted."
+    },
+    "bast": {
+      "title": "Print BAST",
+      "description": "Fill in the handover details, then download the PDF.",
+      "number": "Number",
+      "date": "Handover Date",
+      "firstParty": "First Party",
+      "secondParty": "Second Party",
+      "first_name": "First Party Name",
+      "first_position": "First Party Position",
+      "second_name": "Second Party Name",
+      "second_position": "Second Party Position",
+      "second_department": "Second Party Department",
+      "condition": "Item Condition",
+      "warranty": "Warranty",
+      "notes": "Additional Notes",
+      "submit": "Download BAST",
+      "done": "BAST downloaded."
+    },
+    "delete": "Delete",
+    "deleting": "Deleting…"
   }
 }
