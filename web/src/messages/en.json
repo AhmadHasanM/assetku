@@ -130,6 +130,7 @@
     "not_found": "Not found.",
     "validation": "Please check the highlighted fields.",
     "invalid_json": "Invalid request.",
+    "body_too_large": "The request is too large.",
     "in_use": "Still used by {count} assets.",
     "invalid_filter": "Invalid filter.",
     "invalid_file": "The file could not be read.",

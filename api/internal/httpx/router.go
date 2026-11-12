@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"net/http"
+	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -10,6 +11,8 @@ import (
 type Deps struct {
 	Pool         *pgxpool.Pool
 	CookieSecure bool
+	// TrustedProxies are the peers whose X-Real-IP header is believed (see RealIP).
+	TrustedProxies []netip.Prefix
 	// Register mounts feature routes (e.g. auth.Service.Register) on the mux.
 	Register func(mux *http.ServeMux)
 }
@@ -23,5 +26,5 @@ func NewRouter(deps Deps) http.Handler {
 	if deps.Register != nil {
 		deps.Register(mux)
 	}
-	return CSRF(deps.CookieSecure)(mux)
+	return RealIP(deps.TrustedProxies)(CSRF(deps.CookieSecure)(mux))
 }

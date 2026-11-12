@@ -130,6 +130,7 @@
     "not_found": "Data tidak ditemukan.",
     "validation": "Periksa kembali isian Anda.",
     "invalid_json": "Permintaan tidak valid.",
+    "body_too_large": "Permintaan terlalu besar.",
     "in_use": "Masih dipakai oleh {count} asset.",
     "invalid_filter": "Filter tidak valid.",
     "invalid_file": "File tidak dapat dibaca.",

@@ -99,7 +99,7 @@ func main() {
 	dashboardSvc := dashboard.NewService(pool, svc, assetSvc)
 	importSvc := importer.NewService(pool, svc)
 	exportSvc := export.NewService(pool, svc, assetSvc)
-	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
+	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, TrustedProxies: cfg.TrustedProxies, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
 		masterSvc.Register(mux)
