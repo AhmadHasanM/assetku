@@ -166,7 +166,7 @@ func ApplyRow(ctx context.Context, tx pgx.Tx, p auth.Principal, cols map[string]
 		if !ok || i < 0 || i >= len(row) {
 			return ""
 		}
-		return strings.TrimSpace(row[i])
+		return UnquoteFormula(strings.TrimSpace(row[i]))
 	}
 	if cell("name") == "" {
 		res.skip(rowNum, ReasonMissingName)

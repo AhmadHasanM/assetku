@@ -57,14 +57,8 @@ func (f ListFilter) where(tenantID uuid.UUID) (string, []any) {
 	return strings.Join(conds, " AND "), args
 }
 
-// List returns one page (limit > 0, offset from f.Page) or all matching rows
-// (limit <= 0) plus the total number of matches.
-func (s *Service) List(ctx context.Context, tenantID uuid.UUID, f ListFilter, limit int) ([]ListItem, int, error) {
-	where, args := f.where(tenantID)
-	var total int
-	if err := s.pool.QueryRow(ctx, "SELECT count(*) FROM assets a WHERE "+where, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
+// orderBy returns the ORDER BY expression list for f (whitelisted, never interpolated input).
+func (f ListFilter) orderBy() string {
 	col, ok := sortColumns[f.Sort]
 	if !ok {
 		col = sortColumns["created_at"]
@@ -73,12 +67,24 @@ func (s *Service) List(ctx context.Context, tenantID uuid.UUID, f ListFilter, li
 	if f.Dir == "asc" {
 		dir = "ASC"
 	}
+	return col + " " + dir + ", a.id " + dir
+}
+
+// List returns one page (limit > 0, offset from f.Page) or all matching rows
+// (limit <= 0) plus the total number of matches.
+func (s *Service) List(ctx context.Context, tenantID uuid.UUID, f ListFilter, limit int) ([]ListItem, int, error) {
+	where, args := f.where(tenantID)
+	var total int
+	if err := s.pool.QueryRow(ctx, "SELECT count(*) FROM assets a WHERE "+where, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	order := f.orderBy()
 	sql := `SELECT a.id, a.asset_tag, a.name, a.category, a.model, a.serial_number, a.status, a.assigned_to,
 		COALESCE(l.name, ''), COALESCE(o.name, '')
 		FROM assets a
 		LEFT JOIN locations l ON l.id = a.location_id AND l.tenant_id = a.tenant_id
 		LEFT JOIN organizations o ON o.id = a.organization_id AND o.tenant_id = a.tenant_id
-		WHERE ` + where + " ORDER BY " + col + " " + dir + ", a.id " + dir
+		WHERE ` + where + " ORDER BY " + order
 	if limit > 0 {
 		page := max(f.Page, 1)
 		args = append(args, limit, (page-1)*limit)

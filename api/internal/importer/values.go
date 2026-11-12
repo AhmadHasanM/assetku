@@ -293,3 +293,13 @@ func ParseWarrantyMonths(s string) (*int, error) {
 	}
 	return &n, nil
 }
+
+// UnquoteFormula removes one leading apostrophe when the next character is
+// one of = + - @. The export adds it to such cells to defuse spreadsheet
+// formulas; removing it keeps export then import lossless.
+func UnquoteFormula(s string) string {
+	if len(s) >= 2 && s[0] == '\'' && strings.ContainsRune("=+-@", rune(s[1])) {
+		return s[1:]
+	}
+	return s
+}

@@ -135,3 +135,14 @@ func TestParseWarrantyMonths(t *testing.T) {
 		}
 	}
 }
+
+func TestUnquoteFormula(t *testing.T) {
+	for in, want := range map[string]string{
+		"'=SUM(A1)": "=SUM(A1)", "'+1": "+1", "'-x": "-x", "'@a": "@a",
+		"'hello": "'hello", "''=x": "''=x", "'": "'", "=x": "=x", "": "",
+	} {
+		if got := UnquoteFormula(in); got != want {
+			t.Errorf("UnquoteFormula(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

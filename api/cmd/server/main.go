@@ -18,6 +18,7 @@ import (
 	"assetku/api/internal/config"
 	"assetku/api/internal/dashboard"
 	"assetku/api/internal/db"
+	"assetku/api/internal/export"
 	"assetku/api/internal/history"
 	"assetku/api/internal/httpx"
 	"assetku/api/internal/importer"
@@ -97,6 +98,7 @@ func main() {
 	notifySvc := notify.NewService(pool, svc)
 	dashboardSvc := dashboard.NewService(pool, svc, assetSvc)
 	importSvc := importer.NewService(pool, svc)
+	exportSvc := export.NewService(pool, svc, assetSvc)
 	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
@@ -109,6 +111,7 @@ func main() {
 		notifySvc.Register(mux)
 		dashboardSvc.Register(mux)
 		importSvc.Register(mux)
+		exportSvc.Register(mux)
 	}})
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
