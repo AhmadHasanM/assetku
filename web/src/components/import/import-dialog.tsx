@@ -29,6 +29,8 @@ const ACCEPT = ".xlsx,.xls,.csv"
 const POLL_MS = 1000
 
 const isFinal = (s: ImportJob["status"] | undefined) => s === "done" || s === "failed"
+/** Data an import can change: new assets, suppliers and locations (prefix matches cover lists and summaries). */
+const AFFECTED_QUERIES = ["assets", "locations", "suppliers", "dashboard"]
 
 /** Client-side checks mirroring the API, so an oversized file never leaves the browser. */
 function checkFile(file: File): string | null {
@@ -55,7 +57,11 @@ export function ImportDialog() {
     queryFn: () => api<ImportJob>(`/api/imports/${jobId}`),
     enabled: !!jobId,
     staleTime: 0,
-    refetchInterval: (q) => (isFinal(q.state.data?.status) ? false : POLL_MS),
+    // A 401 already redirects to login; the job stays stored and resumes after signing in.
+    refetchInterval: (q) =>
+      isFinal(q.state.data?.status) || (q.state.error instanceof ApiError && q.state.error.status === 401)
+        ? false
+        : POLL_MS,
   })
 
   const jobFailedCode = job.error instanceof ApiError ? job.error.status : 0
@@ -72,13 +78,16 @@ export function ImportDialog() {
     [t, tErr],
   )
 
+  const invalidateAffected = useCallback(() => {
+    for (const key of AFFECTED_QUERIES) qc.invalidateQueries({ queryKey: [key] })
+  }, [qc])
+
   const data = job.data
   useEffect(() => {
     if (!jobId || !data || data.id !== jobId || !isFinal(data.status)) return
     const inBackground = !getImportState().open
     finishImportJob(data)
-    // New assets, suppliers and locations; prefix matches cover lists and summaries.
-    for (const key of ["assets", "locations", "suppliers", "dashboard"]) qc.invalidateQueries({ queryKey: [key] })
+    invalidateAffected()
     if (!inBackground) return
     const action = { label: t("viewResult"), onClick: () => showImportResult(data) }
     if (data.status === "done" && data.result) {
@@ -87,13 +96,13 @@ export function ImportDialog() {
         { action, duration: 10_000 },
       )
     } else {
-      toast.error(t("toastFailed", { reason: failureText(data) }), { action })
+      toast.error(t("toastFailed", { reason: failureText(data) }), { action, duration: 10_000 })
     }
-  }, [jobId, data, qc, t, failureText])
+  }, [jobId, data, invalidateAffected, t, failureText])
 
   const onOpenChange = (next: boolean) => {
     if (next) return
-    if (result) for (const key of ["assets", "locations", "suppliers", "dashboard"]) qc.invalidateQueries({ queryKey: [key] })
+    if (result) invalidateAffected()
     closeImportDialog()
   }
 

@@ -11,7 +11,11 @@ interface ImportState {
   open: boolean
   /** Running job being polled (mirrored in sessionStorage). */
   jobId: string | null
-  /** Finished job (done or failed) shown on the result step until the dialog closes. */
+  /**
+   * Last finished job (done or failed). Kept even if it finished while the
+   * dialog was closed, so reopening shows its result; cleared when the result
+   * step is closed or a new upload starts.
+   */
   result: ImportJob | null
 }
 
@@ -58,7 +62,7 @@ export function openImportDialog() {
   set({ open: true })
 }
 
-/** Closing drops a shown result; a running job keeps polling in the background. */
+/** Closing dismisses a shown result; a running job keeps polling in the background. */
 export function closeImportDialog() {
   set({ open: false, result: null })
 }
@@ -68,10 +72,10 @@ export function startImportJob(id: string) {
   set({ jobId: id, result: null })
 }
 
-/** The job reached done/failed; it is shown only if the dialog is open. */
+/** The job reached done/failed; its result waits for the user (now or on reopen). */
 export function finishImportJob(job: ImportJob) {
   storage()?.removeItem(IMPORT_JOB_KEY)
-  set({ jobId: null, result: current().open ? job : null })
+  set({ jobId: null, result: job })
 }
 
 /** Forget the job without a result (e.g. it no longer exists). */

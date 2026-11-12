@@ -100,37 +100,37 @@ export function ImportResult({ jobId, result }: { jobId: string; result: ImportR
 
       <div className="flex flex-col gap-2">
         <Section title={t("sections.unknownColumns")} count={result.unknown_columns.length}>
-          {result.unknown_columns.map((c) => (
-            <Line key={c} label={c} />
+          {result.unknown_columns.map((c, i) => (
+            <Line key={`${i}:${c}`} label={c} />
           ))}
         </Section>
         <Section title={t("sections.unmatchedOrganizations")} count={result.unmatched_organizations.length}>
-          {result.unmatched_organizations.map((o) => (
-            <Line key={o.name} label={o.name} detail={rows(o.rows)} />
+          {result.unmatched_organizations.map((o, i) => (
+            <Line key={`${i}:${o.name}`} label={o.name} detail={rows(o.rows)} />
           ))}
         </Section>
         <Section title={t("sections.unrecognizedValues")} count={result.unrecognized_values.length}>
-          {result.unrecognized_values.map((v) => (
+          {result.unrecognized_values.map((v, i) => (
             <Line
-              key={`${v.field}:${v.value}`}
+              key={`${i}:${v.field}:${v.value}`}
               label={`${fieldLabel(v.field)}: ${v.value === "" ? t("emptyValue") : v.value}`}
               detail={rows(v.rows)}
             />
           ))}
         </Section>
         <Section title={t("sections.createdSuppliers")} count={result.created_suppliers.length}>
-          {result.created_suppliers.map((s) => (
-            <Line key={s} label={s} />
+          {result.created_suppliers.map((s, i) => (
+            <Line key={`${i}:${s}`} label={s} />
           ))}
         </Section>
         <Section title={t("sections.createdLocations")} count={result.created_locations.length}>
-          {result.created_locations.map((l) => (
-            <Line key={l} label={l} />
+          {result.created_locations.map((l, i) => (
+            <Line key={`${i}:${l}`} label={l} />
           ))}
         </Section>
         <Section title={t("sections.skippedRows")} count={result.skipped_rows.length}>
-          {result.skipped_rows.map((r) => (
-            <Line key={r.row} label={t("row", { row: r.row })} detail={skipReason(r.reason)} />
+          {result.skipped_rows.map((r, i) => (
+            <Line key={`${i}:${r.row}`} label={t("row", { row: r.row })} detail={skipReason(r.reason)} />
           ))}
         </Section>
       </div>

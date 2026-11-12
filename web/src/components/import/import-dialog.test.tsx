@@ -165,6 +165,60 @@ describe("ImportDialog", () => {
     expect(sessionStorage.getItem("assetku.import.job")).toBeNull()
   })
 
+  it("keeps a result that finished in the background until step 3 is closed", async () => {
+    let n = 0
+    apiMock.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (path === "/api/imports" && init?.method === "POST") return { id: "j1" }
+      if (path === "/api/imports/j1") {
+        n++
+        return n < 2 ? job({ processed_rows: 1 }) : job({ status: "done", processed_rows: 10, result: RESULT })
+      }
+      throw new Error(`unexpected ${path}`)
+    })
+    const user = setup()
+    await pickAndStart(user)
+    await screen.findByText("1 of 10 rows")
+    act(() => closeImportDialog())
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    await waitFor(() => expect(toast.success).toHaveBeenCalled())
+
+    // Reopening via the Import button (not the toast) shows step 3 of that job.
+    act(() => openImportDialog())
+    expect(await screen.findByText("Import finished")).toBeTruthy()
+    expect(screen.getByTestId("count-New").textContent).toContain("3")
+
+    // Closing step 3 dismisses it; the next open starts a fresh upload.
+    await user.keyboard("{Escape}")
+    await waitFor(() => expect(screen.queryByText("Import finished")).toBeNull())
+    act(() => openImportDialog())
+    expect(await screen.findByRole("button", { name: "Start Import" })).toBeTruthy()
+  })
+
+  it("gives the failed toast the same long duration and a view action", async () => {
+    let n = 0
+    apiMock.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (path === "/api/imports" && init?.method === "POST") return { id: "j1" }
+      if (path === "/api/imports/j1") {
+        n++
+        return n < 2 ? job({ processed_rows: 1 }) : job({ status: "failed", error: "server_restarted" })
+      }
+      throw new Error(`unexpected ${path}`)
+    })
+    const user = setup()
+    await pickAndStart(user)
+    await screen.findByText("1 of 10 rows")
+    act(() => closeImportDialog())
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    await waitFor(() => expect(toast.error).toHaveBeenCalled())
+    const [msg, opts] = toast.error.mock.calls[0]
+    expect(msg).toBe("Import failed: The server restarted during the import. Rows already processed were kept.")
+    expect(opts).toMatchObject({ duration: 10_000, action: { label: "View result" } })
+
+    // Reopening shows the failure on step 3.
+    act(() => openImportDialog())
+    expect(await screen.findByText("Import failed")).toBeTruthy()
+  })
+
   it("resumes a job stored in sessionStorage", async () => {
     sessionStorage.setItem("assetku.import.job", "j9")
     resetImportStore({ keepStorage: true })

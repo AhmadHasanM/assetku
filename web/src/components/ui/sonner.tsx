@@ -40,6 +40,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: "cn-toast",
+          // Sonner's 24px/12px action button is below the 44px tap target and 14px body minimum.
+          actionButton: "h-11! rounded-full! px-4! text-sm! font-semibold!",
+          cancelButton: "h-11! rounded-full! px-4! text-sm!",
         },
       }}
       {...props}
