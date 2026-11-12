@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { api, ApiError } from "@/lib/api"
+import { invalidateAssetData } from "@/lib/invalidate"
 import type { ImportJob } from "@/lib/types"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { ImportResult } from "./import-result"
@@ -29,8 +30,6 @@ const ACCEPT = ".xlsx,.xls,.csv"
 const POLL_MS = 1000
 
 const isFinal = (s: ImportJob["status"] | undefined) => s === "done" || s === "failed"
-/** Data an import can change: new assets, suppliers and locations (prefix matches cover lists and summaries). */
-const AFFECTED_QUERIES = ["assets", "locations", "suppliers", "dashboard"]
 
 /** Client-side checks mirroring the API, so an oversized file never leaves the browser. */
 function checkFile(file: File): string | null {
@@ -78,9 +77,7 @@ export function ImportDialog() {
     [t, tErr],
   )
 
-  const invalidateAffected = useCallback(() => {
-    for (const key of AFFECTED_QUERIES) qc.invalidateQueries({ queryKey: [key] })
-  }, [qc])
+  const invalidateAffected = useCallback(() => invalidateAssetData(qc), [qc])
 
   const data = job.data
   useEffect(() => {

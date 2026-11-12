@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { api } from "@/lib/api"
+import { invalidateAssetData } from "@/lib/invalidate"
 import { useErrorMessage } from "@/lib/use-error-message"
 
 interface Props {
@@ -36,9 +37,8 @@ export function DeleteAssetDialog({ asset, onClose, onDeleted }: Props) {
       onDeleted?.(id)
       // The deleted asset's own queries (detail, tabs) could only refetch into 404s.
       qc.removeQueries({ queryKey: ["assets", "detail", id] })
-      // Prefix match covers both the list and the summary query.
-      qc.invalidateQueries({ queryKey: ["assets"] })
-      qc.invalidateQueries({ queryKey: ["dashboard"] })
+      // Prefix matches cover the list, the summary and the master data counts.
+      invalidateAssetData(qc)
       toast.success(t("done"))
     },
     onError: (err) => toast.error(errorMessage(err)),

@@ -13,6 +13,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { api, ApiError } from "@/lib/api"
+import { invalidateAssetData } from "@/lib/invalidate"
 import { todayJakarta } from "@/lib/format"
 import { useMe } from "@/lib/me"
 import type { MasterRef } from "@/lib/types"
@@ -87,9 +88,9 @@ function MovementForm({ asset, onDone }: { asset: Props["asset"]; onDone: () => 
         method: "POST",
         json: { to_location_id: v.to_location?.id, date: v.date, moved_by: v.moved_by.trim(), reason: v.reason.trim() },
       })
-      // The header shows the new location; list, summary, history and movements all live under ["assets"].
-      qc.invalidateQueries({ queryKey: ["assets"] })
-      qc.invalidateQueries({ queryKey: ["dashboard"] })
+      // The header shows the new location; list, summary, history and movements all live under
+      // ["assets"], and the location list counts change too.
+      invalidateAssetData(qc)
       toast.success(t("saved"))
       onDone()
     } catch (err) {

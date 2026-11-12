@@ -219,6 +219,25 @@ describe("ImportDialog", () => {
     expect(await screen.findByText("Import failed")).toBeTruthy()
   })
 
+  it("shows the generic message for the internal error code", async () => {
+    let n = 0
+    apiMock.mockImplementation(async (path: string, init?: { method?: string }) => {
+      if (path === "/api/imports" && init?.method === "POST") return { id: "j1" }
+      if (path === "/api/imports/j1") {
+        n++
+        return n < 2 ? job({ processed_rows: 1 }) : job({ status: "failed", error: "internal" })
+      }
+      throw new Error(`unexpected ${path}`)
+    })
+    const user = setup()
+    await pickAndStart(user)
+    await screen.findByText("1 of 10 rows")
+    act(() => closeImportDialog())
+    await act(() => vi.advanceTimersByTimeAsync(1000))
+    await waitFor(() => expect(toast.error).toHaveBeenCalled())
+    expect(toast.error.mock.calls[0][0]).toBe("Import failed: Something went wrong. Please try again.")
+  })
+
   it("resumes a job stored in sessionStorage", async () => {
     sessionStorage.setItem("assetku.import.job", "j9")
     resetImportStore({ keepStorage: true })

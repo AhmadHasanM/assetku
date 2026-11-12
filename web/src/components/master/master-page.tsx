@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { api, ApiError } from "@/lib/api"
+import { invalidateMasterData } from "@/lib/invalidate"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { KIND_CONFIG, type MasterItem, type MasterKind } from "./kinds"
 import { MasterFormDialog, type MasterValues } from "./master-form-dialog"
@@ -60,7 +61,7 @@ export function MasterPage({ kind }: { kind: MasterKind }) {
         ? api<MasterItem>(`/api/${kind}/${editing.id}`, { method: "PATCH", json: values })
         : api<MasterItem>(`/api/${kind}`, { method: "POST", json: values }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [kind] })
+      invalidateMasterData(qc, kind)
       setFormOpen(false)
       toast.success(t("saved"))
     },
@@ -69,7 +70,7 @@ export function MasterPage({ kind }: { kind: MasterKind }) {
   const remove = useMutation({
     mutationFn: (item: MasterItem) => api<void>(`/api/${kind}/${item.id}`, { method: "DELETE" }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [kind] })
+      invalidateMasterData(qc, kind)
       toast.success(t("deleted"))
     },
     onError: (err) => {

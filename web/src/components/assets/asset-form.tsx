@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { api, ApiError } from "@/lib/api"
+import { invalidateAssetData } from "@/lib/invalidate"
 import { formatDate } from "@/lib/format"
 import { ASSET_CATEGORIES, ASSET_STATUSES, type Asset, type Locale } from "@/lib/types"
 import { useErrorMessage, useFieldErrorMessage } from "@/lib/use-error-message"
@@ -167,8 +168,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
   const onSubmit = async (values: AssetFormValues) => {
     try {
       const saved = await save.mutateAsync(values)
-      qc.invalidateQueries({ queryKey: ["assets"] })
-      qc.invalidateQueries({ queryKey: ["dashboard"] })
+      invalidateAssetData(qc)
       toast.success(t("saved"))
       guard.go(`/assets/${saved.id}`)
     } catch (err) {
