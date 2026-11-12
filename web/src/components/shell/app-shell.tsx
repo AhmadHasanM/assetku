@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useMe } from "@/lib/me"
 import { MobileNav } from "./mobile-nav"
 import { Logo } from "./logo"
+import { NotificationBell } from "./notification-bell"
 import { Sidebar } from "./sidebar"
 import { UserMenu } from "./user-menu"
 import { useApplyPreferences } from "./use-preferences"
@@ -23,7 +24,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="lg:hidden">
             <Logo className="text-lg" />
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1 sm:gap-2">
+            <NotificationBell />
             {me ? <UserMenu me={me} /> : <Skeleton className="h-11 w-11 rounded-full sm:w-36" />}
           </div>
         </header>

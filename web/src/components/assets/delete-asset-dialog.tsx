@@ -38,6 +38,7 @@ export function DeleteAssetDialog({ asset, onClose, onDeleted }: Props) {
       qc.removeQueries({ queryKey: ["assets", "detail", id] })
       // Prefix match covers both the list and the summary query.
       qc.invalidateQueries({ queryKey: ["assets"] })
+      qc.invalidateQueries({ queryKey: ["dashboard"] })
       toast.success(t("done"))
     },
     onError: (err) => toast.error(errorMessage(err)),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatDate, formatRupiah, todayJakarta } from "./format"
+import { daysBetween, formatDate, formatRelative, formatRupiah, todayJakarta } from "./format"
 
 describe("formatRupiah", () => {
   it("formats decimal strings with dot thousands and no decimals", () => {
@@ -42,5 +42,35 @@ describe("todayJakarta", () => {
     // 18:30 UTC is already 01:30 the next day in Jakarta (UTC+7).
     expect(todayJakarta(new Date("2026-11-30T18:30:00Z"))).toBe("2026-12-01")
     expect(todayJakarta(new Date("2026-11-30T16:59:00Z"))).toBe("2026-11-30")
+  })
+})
+
+describe("formatRelative", () => {
+  const now = new Date("2026-11-12T10:00:00Z")
+  it("formats recent times in the locale", () => {
+    expect(formatRelative("2026-11-12T09:55:00Z", "en", now)).toBe("5 minutes ago")
+    expect(formatRelative("2026-11-12T07:00:00Z", "id", now)).toBe("3 jam yang lalu")
+  })
+  it("uses words for yesterday", () => {
+    expect(formatRelative("2026-11-11T10:00:00Z", "en", now)).toBe("yesterday")
+    expect(formatRelative("2026-11-11T10:00:00Z", "id", now)).toBe("kemarin")
+  })
+  it("rolls up to months", () => {
+    expect(formatRelative("2026-08-12T10:00:00Z", "en", now)).toBe("3 months ago")
+  })
+  it("treats future timestamps as now and invalid as an em dash", () => {
+    expect(formatRelative("2026-11-12T10:00:05Z", "en", now)).toBe("now")
+    expect(formatRelative("nope", "en", now)).toBe("—")
+  })
+})
+
+describe("daysBetween", () => {
+  it("counts calendar days", () => {
+    expect(daysBetween("2026-11-12", "2026-11-19")).toBe(7)
+    expect(daysBetween("2026-11-12", "2026-11-10")).toBe(-2)
+    expect(daysBetween("2026-12-31", "2027-01-01")).toBe(1)
+  })
+  it("returns NaN for malformed input", () => {
+    expect(daysBetween("x", "2026-11-12")).toBeNaN()
   })
 })

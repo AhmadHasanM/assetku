@@ -89,6 +89,7 @@ function MovementForm({ asset, onDone }: { asset: Props["asset"]; onDone: () => 
       })
       // The header shows the new location; list, summary, history and movements all live under ["assets"].
       qc.invalidateQueries({ queryKey: ["assets"] })
+      qc.invalidateQueries({ queryKey: ["dashboard"] })
       toast.success(t("saved"))
       onDone()
     } catch (err) {

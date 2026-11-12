@@ -64,7 +64,34 @@
     "preferencesSaveFailed": "Could not save your preference."
   },
   "dashboard": {
-    "title": "Dashboard"
+    "title": "Dashboard",
+    "loadFailed": "Could not load the dashboard.",
+    "attention": {
+      "title": "Needs Attention",
+      "empty": "Nothing needs attention right now.",
+      "viewAll": "View all ({count})",
+      "noLocation": "No location"
+    },
+    "upcoming": {
+      "title": "Upcoming Maintenance",
+      "hint": "Next maintenance within 30 days or overdue",
+      "empty": "No maintenance due in the next 30 days.",
+      "overdue": "Overdue",
+      "dueSoon": "Due soon",
+      "more": "and {count} more"
+    },
+    "byCategory": {
+      "title": "Assets by Category"
+    },
+    "byStatus": {
+      "title": "Assets by Status"
+    },
+    "chart": {
+      "label": "{name}: {count}",
+      "empty": "No assets yet.",
+      "count": "Assets",
+      "dimension": "Group"
+    }
   },
   "status": {
     "available": "Available",
@@ -491,5 +518,14 @@
       "server_restarted": "The server restarted during the import. Rows already processed were kept.",
       "job_data_missing": "The import data is no longer available. Upload the file again."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "open": "Notifications",
+    "openUnread": "Notifications, {count} unread",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications yet.",
+    "loadFailed": "Could not load notifications.",
+    "unread": "Unread"
   }
 }

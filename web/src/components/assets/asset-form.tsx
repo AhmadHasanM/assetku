@@ -168,6 +168,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
     try {
       const saved = await save.mutateAsync(values)
       qc.invalidateQueries({ queryKey: ["assets"] })
+      qc.invalidateQueries({ queryKey: ["dashboard"] })
       toast.success(t("saved"))
       guard.go(`/assets/${saved.id}`)
     } catch (err) {

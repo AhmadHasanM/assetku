@@ -64,7 +64,34 @@
     "preferencesSaveFailed": "Preferensi gagal disimpan."
   },
   "dashboard": {
-    "title": "Dashboard"
+    "title": "Dashboard",
+    "loadFailed": "Dashboard gagal dimuat.",
+    "attention": {
+      "title": "Perlu Perhatian",
+      "empty": "Tidak ada asset yang perlu perhatian.",
+      "viewAll": "Lihat semua ({count})",
+      "noLocation": "Tanpa lokasi"
+    },
+    "upcoming": {
+      "title": "Maintenance Mendatang",
+      "hint": "Maintenance berikutnya dalam 30 hari atau sudah lewat",
+      "empty": "Tidak ada maintenance dalam 30 hari ke depan.",
+      "overdue": "Terlambat",
+      "dueSoon": "Segera",
+      "more": "dan {count} lainnya"
+    },
+    "byCategory": {
+      "title": "Asset per Kategori"
+    },
+    "byStatus": {
+      "title": "Asset per Status"
+    },
+    "chart": {
+      "label": "{name}: {count}",
+      "empty": "Belum ada asset.",
+      "count": "Asset",
+      "dimension": "Kelompok"
+    }
   },
   "status": {
     "available": "Tersedia",
@@ -491,5 +518,14 @@
       "server_restarted": "Server dimulai ulang saat import berjalan. Baris yang sudah diproses tetap tersimpan.",
       "job_data_missing": "Data import tidak tersedia lagi. Unggah ulang file."
     }
+  },
+  "notifications": {
+    "title": "Notifikasi",
+    "open": "Notifikasi",
+    "openUnread": "Notifikasi, {count} belum dibaca",
+    "markAllRead": "Tandai semua dibaca",
+    "empty": "Belum ada notifikasi.",
+    "loadFailed": "Notifikasi gagal dimuat.",
+    "unread": "Belum dibaca"
   }
 }

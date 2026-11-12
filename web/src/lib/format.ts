@@ -55,3 +55,38 @@ export function todayJakarta(now: Date = new Date()): string {
   const parts = Object.fromEntries(jakartaParts.formatToParts(now).map((p) => [p.type, p.value]))
   return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`
 }
+
+const RELATIVE_STEPS: readonly [Intl.RelativeTimeFormatUnit, number][] = [
+  ["second", 60],
+  ["minute", 60],
+  ["hour", 24],
+  ["day", 7],
+  ["week", 4.35],
+  ["month", 12],
+  ["year", Infinity],
+]
+
+/** Timestamp -> "5 minutes ago" / "kemarin" in the given locale. Invalid -> "—". */
+export function formatRelative(iso: string | null | undefined, locale: Locale, now: Date = new Date()): string {
+  if (!iso) return EMPTY
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return EMPTY
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" })
+  // Clock skew can put a fresh timestamp slightly in the future; show it as "now".
+  let value = Math.min(0, (t - now.getTime()) / 1000)
+  for (const [unit, size] of RELATIVE_STEPS) {
+    if (Math.abs(value) < size) return rtf.format(Math.round(value), unit)
+    value /= size
+  }
+  return EMPTY
+}
+
+/** Whole days from a to b, both yyyy-mm-dd (b later -> positive). NaN when either is malformed. */
+export function daysBetween(a: string, b: string): number {
+  const pa = DATE_ONLY.exec(a)
+  const pb = DATE_ONLY.exec(b)
+  if (!pa || !pb) return NaN
+  const ua = Date.UTC(Number(pa[1]), Number(pa[2]) - 1, Number(pa[3]))
+  const ub = Date.UTC(Number(pb[1]), Number(pb[2]) - 1, Number(pb[3]))
+  return Math.round((ub - ua) / 86_400_000)
+}

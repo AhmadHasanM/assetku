@@ -122,6 +122,7 @@ function MaintenanceForm({ assetId, onDone }: { assetId: string; onDone: () => v
       })
       qc.invalidateQueries({ queryKey: ["assets", "detail", assetId, "maintenance"] })
       qc.invalidateQueries({ queryKey: ["assets", "detail", assetId, "history"] })
+      qc.invalidateQueries({ queryKey: ["dashboard"] })
       toast.success(t("saved"))
       onDone()
     } catch (err) {

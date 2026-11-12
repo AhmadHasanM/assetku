@@ -148,3 +148,44 @@ export interface ImportJob {
   /** Failure code, e.g. server_restarted; empty unless failed. */
   error: string
 }
+
+/** One entry of GET /api/notifications; title/body are already in the user's language. */
+export interface NotificationItem {
+  id: number
+  type: string
+  title: string
+  body: string
+  asset_id: string | null
+  read_at: string | null
+  created_at: string
+}
+
+/** GET /api/notifications: the last 20 plus the total unread count. */
+export interface NotificationList {
+  unread: number
+  items: NotificationItem[]
+}
+
+/** GET /api/dashboard. */
+export interface DashboardData {
+  summary: { total: number; available: number; in_use: number; needs_attention: number }
+  attention: {
+    id: string
+    asset_tag: string
+    name: string
+    status: AssetStatus
+    location_name: string | null
+    updated_at: string
+  }[]
+  /** May include archived or lost assets (ruling T9). */
+  upcoming_maintenance: {
+    asset_id: string
+    asset_tag: string
+    name: string
+    /** yyyy-mm-dd */
+    next_date: string
+    overdue: boolean
+  }[]
+  by_category: { key: AssetCategory; count: number }[]
+  by_status: { key: AssetStatus; count: number }[]
+}

@@ -66,6 +66,7 @@ export function MaintenanceTab({ assetId }: { assetId: string }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["assets", "detail", assetId, "maintenance"] })
       qc.invalidateQueries({ queryKey: ["assets", "detail", assetId, "history"] })
+      qc.invalidateQueries({ queryKey: ["dashboard"] })
       toast.success(t("deleted"))
     },
     onError: (err) => toast.error(errorMessage(err)),
