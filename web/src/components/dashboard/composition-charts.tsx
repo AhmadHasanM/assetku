@@ -87,23 +87,27 @@ function CompositionBars({ title, rows, config }: { title: string; rows: Row[]; 
                 </Bar>
               </BarChart>
             </ChartContainer>
-            <table className="sr-only">
-              <caption>{title}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{t("dimension")}</th>
-                  <th scope="col">{t("count")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.key}>
-                    <th scope="row">{r.label}</th>
-                    <td>{format.number(r.count)}</td>
+            {/* sr-only goes on a wrapper: a table ignores height:1px, so an sr-only <table>
+                still grows with its rows and stretches the page's scroll height past the shell. */}
+            <div className="sr-only">
+              <table>
+                <caption>{title}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{t("dimension")}</th>
+                    <th scope="col">{t("count")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.key}>
+                      <th scope="row">{r.label}</th>
+                      <td>{format.number(r.count)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </CardContent>
