@@ -139,3 +139,27 @@ func (c *APIClient) JSON(res *http.Response, v any) {
 		c.t.Fatalf("decode response (status %d): %v", res.StatusCode, err)
 	}
 }
+
+// DoRaw sends body as-is with the given Content-Type and the CSRF header set.
+// The caller closes the response body.
+func (c *APIClient) DoRaw(method, path string, body io.Reader, contentType string) *http.Response {
+	c.t.Helper()
+	if c.Cookie("csrf_token") == "" {
+		res, err := c.http.Get(c.base + "/api/health")
+		if err != nil {
+			c.t.Fatal(err)
+		}
+		res.Body.Close()
+	}
+	req, err := http.NewRequest(method, c.base+path, body)
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("X-CSRF-Token", c.Cookie("csrf_token"))
+	res, err := c.http.Do(req)
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	return res
+}

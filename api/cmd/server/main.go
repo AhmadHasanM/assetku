@@ -20,6 +20,7 @@ import (
 	"assetku/api/internal/db"
 	"assetku/api/internal/history"
 	"assetku/api/internal/httpx"
+	"assetku/api/internal/importer"
 	"assetku/api/internal/maintenance"
 	"assetku/api/internal/masterdata"
 	"assetku/api/internal/movement"
@@ -79,6 +80,11 @@ func main() {
 	exitCode := 0
 	defer func() { os.Exit(exitCode) }()
 	defer pool.Close()
+	if n, err := importer.FailInterrupted(context.Background(), pool); err != nil {
+		log.Printf("import recovery: %v", err)
+	} else if n > 0 {
+		log.Printf("import recovery: marked %d interrupted import(s) failed", n)
+	}
 	log.Printf("%s API listening on %s", config.ProductName, cfg.Addr)
 	svc := auth.NewService(pool, cfg.CookieSecure)
 	adminSvc := admin.NewService(pool, svc)
@@ -90,6 +96,7 @@ func main() {
 	movementSvc := movement.NewService(pool, svc)
 	notifySvc := notify.NewService(pool, svc)
 	dashboardSvc := dashboard.NewService(pool, svc, assetSvc)
+	importSvc := importer.NewService(pool, svc)
 	router := httpx.NewRouter(httpx.Deps{Pool: pool, CookieSecure: cfg.CookieSecure, Register: func(mux *http.ServeMux) {
 		svc.Register(mux)
 		adminSvc.Register(mux)
@@ -101,6 +108,7 @@ func main() {
 		movementSvc.Register(mux)
 		notifySvc.Register(mux)
 		dashboardSvc.Register(mux)
+		importSvc.Register(mux)
 	}})
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {

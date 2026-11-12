@@ -45,6 +45,20 @@ type AssetHistory struct {
 	CreatedAt time.Time
 }
 
+type Import struct {
+	ID            uuid.UUID
+	TenantID      uuid.UUID
+	UserID        uuid.NullUUID
+	FileName      string
+	Status        string
+	TotalRows     int32
+	ProcessedRows int32
+	Result        []byte
+	Error         string
+	CreatedAt     time.Time
+	FinishedAt    *time.Time
+}
+
 type Location struct {
 	ID          uuid.UUID
 	TenantID    uuid.UUID
