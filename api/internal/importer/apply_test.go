@@ -6,8 +6,10 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"assetku/api/internal/asset"
@@ -154,8 +156,8 @@ func TestMissingNameSkippedAndBlankRowsIgnored(t *testing.T) {
 	if got := counts(res); got != [4]int{2, 0, 0, 1} {
 		t.Fatalf("counts=%v", got)
 	}
-	// title row 1, blank line dropped by csv reader, header row 2, data rows 3..7
-	if len(res.SkippedRows) != 1 || res.SkippedRows[0].Reason != ReasonMissingName || res.SkippedRows[0].Row != 6 {
+	// title line 1, blank line 2, header line 3, data lines 4..8: the nameless row is line 7
+	if len(res.SkippedRows) != 1 || res.SkippedRows[0].Reason != ReasonMissingName || res.SkippedRows[0].Row != 7 {
 		t.Errorf("skipped=%+v", res.SkippedRows)
 	}
 }
@@ -317,6 +319,88 @@ func TestTemplateRoundTrip(t *testing.T) {
 	}
 	if got := counts(res); got != [4]int{1, 0, 0, 0} || len(res.UnrecognizedValues) != 0 {
 		t.Errorf("counts=%v unrecognized=%+v", got, res.UnrecognizedValues)
+	}
+	if len(res.CreatedSuppliers)+len(res.CreatedLocations)+len(res.UnmatchedOrganizations) != 0 {
+		t.Errorf("template touched master data: %+v", res)
+	}
+	var n int
+	_ = pool.QueryRow(context.Background(), `SELECT (SELECT count(*) FROM locations) + (SELECT count(*) FROM suppliers)
+		+ (SELECT count(*) FROM organizations)`).Scan(&n)
+	if n != 0 {
+		t.Errorf("master data rows=%d", n)
+	}
+}
+
+func TestBlankEnumsReportedOnlyWhenColumnPresent(t *testing.T) {
+	pool, p := setupTenant(t)
+	res := importFile(t, pool, p, "a.csv", "Name,Notes\nA,x\nB,y\n")
+	if res.Created != 2 || len(res.UnrecognizedValues) != 0 {
+		t.Errorf("no enum columns: created=%d unrecognized=%+v", res.Created, res.UnrecognizedValues)
+	}
+	var cat, st string
+	_ = pool.QueryRow(context.Background(), `SELECT category, status FROM assets WHERE name = 'A'`).Scan(&cat, &st)
+	if cat != "other" || st != "available" {
+		t.Errorf("fallback category=%s status=%s", cat, st)
+	}
+	res = importFile(t, pool, p, "a.csv", "Name,Status,Category\nC,,\nD,,Laptop\n")
+	want := map[ValueIssue]bool{{"status", "", 2}: true, {"category", "", 1}: true}
+	if len(res.UnrecognizedValues) != 2 || !want[res.UnrecognizedValues[0]] || !want[res.UnrecognizedValues[1]] {
+		t.Errorf("present but blank: %+v", res.UnrecognizedValues)
+	}
+}
+
+// TestConcurrentSameNewTag runs the same new tag in two transactions: the
+// second waits on the first's unique index entry, then is skipped as "error".
+func TestConcurrentSameNewTag(t *testing.T) {
+	pool, p := setupTenant(t)
+	ctx := context.Background()
+	f, err := parseFile("a.csv", strings.NewReader("Tag,Name\nC-1,First\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := f.rows[0]
+	tx1, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx1.Rollback(ctx)
+	res1 := NewResult()
+	if err := ApplyRow(ctx, tx1, p, f.cols, row.cells, row.num, res1, map[string]int{}); err != nil || res1.Created != 1 {
+		t.Fatalf("first: err=%v res=%+v", err, res1)
+	}
+	res2 := NewResult()
+	done := make(chan error, 1)
+	go func() {
+		done <- pgx.BeginFunc(ctx, pool, func(tx2 pgx.Tx) error {
+			return ApplyRow(ctx, tx2, p, f.cols, row.cells, row.num, res2, map[string]int{})
+		})
+	}()
+	// Commit only once the second insert is blocked on the first one's lock,
+	// so the order is deterministic.
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		var waiting int
+		_ = pool.QueryRow(ctx, `SELECT count(*) FROM pg_stat_activity
+			WHERE datname = current_database() AND wait_event_type = 'Lock'`).Scan(&waiting)
+		if waiting > 0 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("second import never blocked on the first")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if err := tx1.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	if got := counts(res2); got != [4]int{0, 0, 0, 1} || res2.SkippedRows[0].Reason != ReasonError {
+		t.Errorf("second: counts=%v skipped=%+v", got, res2.SkippedRows)
+	}
+	if n := assetCount(t, pool, p.TenantID); n != 1 {
+		t.Errorf("asset count=%d", n)
 	}
 }
 

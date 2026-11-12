@@ -16,9 +16,11 @@ var CanonicalHeaders = []string{
 }
 
 // templateExample is the sample row under the headers, one value per header.
+// Location, Organization and Supplier stay blank so importing the untouched
+// template creates no master data.
 var templateExample = []any{
 	"", "Laptop Dell Latitude 5420", "IT Equipment", "Dell", "Latitude 5420", "SN-123456", "Available",
-	"Head Office", "Budi Santoso", "", "PT Contoh Supplier", "PO-2026-001", "2026-01-15",
+	"", "Budi Santoso", "", "", "PO-2026-001", "2026-01-15",
 	12500000, 24, "Leave Asset Tag empty to generate one",
 }
 

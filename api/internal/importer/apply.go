@@ -201,7 +201,7 @@ func ApplyRow(ctx context.Context, tx pgx.Tx, p auth.Principal, cols map[string]
 	if err != nil {
 		return err
 	}
-	outcome, notes, err := applyInSavepoint(ctx, sp, p, cell, tag, date, cost, warranty)
+	outcome, notes, err := applyInSavepoint(ctx, sp, p, cols, cell, tag, date, cost, warranty)
 	if err == nil {
 		err = sp.Commit(ctx) // release savepoint
 	}
@@ -278,7 +278,7 @@ const (
 	outcomeUpdated
 )
 
-func applyInSavepoint(ctx context.Context, tx pgx.Tx, p auth.Principal, cell func(string) string, tag string,
+func applyInSavepoint(ctx context.Context, tx pgx.Tx, p auth.Principal, cols map[string]int, cell func(string) string, tag string,
 	date *civil.Date, cost *decimal.Decimal, warranty *int) (outcome, rowNotes, error) {
 	var notes rowNotes
 	var existing *asset.Asset
@@ -322,7 +322,8 @@ func applyInSavepoint(ctx context.Context, tx pgx.Tx, p auth.Principal, cell fun
 
 	// Category and status: an unrecognized value is reported; a new asset
 	// falls back to other/available, an existing one keeps its value. A blank
-	// value leaves an existing asset alone and is reported for a new one.
+	// value leaves an existing asset alone; on a new asset it falls back too and
+	// is reported (as "") only when the column exists in the file.
 	for _, e := range []struct {
 		field string
 		dst   *string
@@ -337,7 +338,9 @@ func applyInSavepoint(ctx context.Context, tx pgx.Tx, p auth.Principal, cell fun
 		case raw == "" && existing != nil:
 		case raw == "":
 			*e.dst = code
-			notes.unrecognized = append(notes.unrecognized, [2]string{e.field, ""})
+			if _, mapped := cols[e.field]; mapped {
+				notes.unrecognized = append(notes.unrecognized, [2]string{e.field, ""})
+			}
 		case ok:
 			*e.dst = code
 		default:

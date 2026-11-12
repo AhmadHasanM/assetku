@@ -3,6 +3,7 @@ package importer
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -193,6 +194,10 @@ func TestUploadLimits(t *testing.T) {
 	}
 	expectError(t, e.a, upload(t, e.a, "many.csv", []byte(sb.String())), http.StatusUnprocessableEntity, "too_many_rows")
 
+	// An endless CSV is rejected without reading it all.
+	if _, err := parseFile("endless.csv", &endlessCSV{}); !errors.Is(err, ErrTooManyRows) {
+		t.Errorf("endless: %v", err)
+	}
 	// Exactly the limit, plus blank rows that do not count, parses.
 	exact := strings.Replace(sb.String(), "Name\nx\n", "Name\n\n,\n", 1)
 	if f, err := parseFile("exact.csv", strings.NewReader(exact)); err != nil || len(f.rows) != MaxDataRows {

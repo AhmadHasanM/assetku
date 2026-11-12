@@ -18,8 +18,8 @@ func TestReadCSVSemicolonBOM(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := [][]string{{"Nama Asset", "Harga", "Catatan"}, {"Laptop", "Rp 12.500.000", "a;b"}}
-	// leading blank line is skipped by encoding/csv
+	// The leading blank line stays as an empty row, so rows[i] is line i+1.
+	want := [][]string{{}, {"Nama Asset", "Harga", "Catatan"}, {"Laptop", "Rp 12.500.000", "a;b"}}
 	if !reflect.DeepEqual(rows, want) {
 		t.Errorf("rows=%q", rows)
 	}
@@ -146,10 +146,13 @@ func TestReadXLSFormulaResults(t *testing.T) {
 	// A1 =1000*12500, A2 ="Lap"&"top", A3 =1>0, A4 =1/0, A5 =DATE(2026,1,15)
 	want := []string{"12500000", "Laptop", "TRUE", "", "2026-01-15"}
 	for i, w := range want {
-		if i >= len(rows) || len(rows[i]) == 0 {
+		if i >= len(rows) {
 			t.Fatalf("missing row %d: %q", i, rows)
 		}
-		got := rows[i][0]
+		got := "" // a row whose only value is an error result reads as blank
+		if len(rows[i]) > 0 {
+			got = rows[i][0]
+		}
 		if i == 4 {
 			d, err := ParseDate(got)
 			if err != nil || d == nil || d.String() != w {
@@ -160,5 +163,54 @@ func TestReadXLSFormulaResults(t *testing.T) {
 		if got != w {
 			t.Errorf("row %d: got %q want %q", i, got, w)
 		}
+	}
+}
+
+// endlessCSV yields "x\n" forever; reading it to the end would never finish.
+type endlessCSV struct{ header bool }
+
+func (e *endlessCSV) Read(p []byte) (int, error) {
+	if !e.header {
+		e.header = true
+		return copy(p, "Name\n"), nil
+	}
+	n := 0
+	for n+2 <= len(p) {
+		n += copy(p[n:], "x\n")
+	}
+	return n, nil
+}
+
+func TestReadRowsStopsAtLimit(t *testing.T) {
+	if _, err := ReadRows("a.csv", &endlessCSV{}, 100); !errors.Is(err, ErrTooManyRows) {
+		t.Errorf("endless csv: %v", err)
+	}
+	rows, err := ReadRows("a.csv", strings.NewReader("Name\n\nx\n,\ny\n"), 3)
+	if err != nil || len(rows) != 3 || rows[1].Num != 3 || rows[2].Num != 5 {
+		t.Errorf("at limit: rows=%+v err=%v", rows, err)
+	}
+
+	f := excelize.NewFile()
+	sw, err := f.NewStreamWriter("Sheet1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = sw.SetRow("A1", []any{"Name"})
+	for i := 2; i <= 2000; i++ {
+		cell, _ := excelize.CoordinatesToCellName(1, i)
+		_ = sw.SetRow(cell, []any{"x"})
+	}
+	if err := sw.Flush(); err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	if err := f.Write(&buf); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ReadRows("big.xlsx", bytes.NewReader(buf.Bytes()), 1000); !errors.Is(err, ErrTooManyRows) {
+		t.Errorf("xlsx: %v", err)
+	}
+	if rows, err := ReadRows("big.xlsx", bytes.NewReader(buf.Bytes()), 0); err != nil || len(rows) != 2000 {
+		t.Errorf("xlsx unlimited: %d rows, %v", len(rows), err)
 	}
 }

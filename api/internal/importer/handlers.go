@@ -123,7 +123,7 @@ func (s *Service) upload(w http.ResponseWriter, r *http.Request) error {
 		return errUnsupported
 	case errors.Is(err, errHeaderNotFound):
 		return errNoHeader
-	case errors.Is(err, errTooManyRows):
+	case errors.Is(err, ErrTooManyRows):
 		return errTooMany
 	case err != nil:
 		return errUnreadable

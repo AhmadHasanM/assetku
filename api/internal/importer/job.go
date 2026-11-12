@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"runtime/debug"
 	"sync"
 
 	"github.com/google/uuid"
@@ -28,7 +29,6 @@ const (
 
 var (
 	errHeaderNotFound = errors.New("import: header row not found")
-	errTooManyRows    = errors.New("import: too many rows")
 )
 
 // dataRow is a non-blank data row and its 1-based spreadsheet row number.
@@ -44,28 +44,43 @@ type parsedFile struct {
 	rows    []dataRow
 }
 
-// parseFile reads the file, finds the header row and keeps the non-blank data
-// rows below it. It returns ErrUnsupportedFormat, errHeaderNotFound,
-// errTooManyRows, or a read error.
+// parseFile reads the file, finds the header row within the first
+// headerScanRows sheet rows and keeps the non-blank data rows below it. It
+// stops reading once the file is known to exceed MaxDataRows, and returns
+// ErrUnsupportedFormat, errHeaderNotFound, ErrTooManyRows, or a read error.
 func parseFile(name string, r io.Reader) (*parsedFile, error) {
-	rows, err := ReadFile(name, r)
+	// At most headerScanRows non-blank rows sit at or above the header, so
+	// more than headerScanRows+MaxDataRows non-blank rows is always too many.
+	rows, err := ReadRows(name, r, headerScanRows+MaxDataRows)
 	if err != nil {
 		return nil, err
 	}
-	idx, ok := FindHeaderRow(rows)
+	var top [][]string // sheet rows 1..headerScanRows, blank ones empty
+	for _, row := range rows {
+		if row.Num > headerScanRows {
+			break
+		}
+		for len(top) < row.Num-1 {
+			top = append(top, nil)
+		}
+		top = append(top, row.Cells)
+	}
+	idx, ok := FindHeaderRow(top)
 	if !ok {
 		return nil, errHeaderNotFound
 	}
+	headerNum := idx + 1
 	f := &parsedFile{}
-	f.cols, f.unknown = MapHeaders(rows[idx])
-	for i := idx + 1; i < len(rows); i++ {
-		if blankRow(rows[i]) {
-			continue
+	for _, row := range rows {
+		switch {
+		case row.Num == headerNum:
+			f.cols, f.unknown = MapHeaders(row.Cells)
+		case row.Num > headerNum:
+			if len(f.rows) == MaxDataRows {
+				return nil, ErrTooManyRows
+			}
+			f.rows = append(f.rows, dataRow{num: row.Num, cells: row.Cells})
 		}
-		if len(f.rows) == MaxDataRows {
-			return nil, errTooManyRows
-		}
-		f.rows = append(f.rows, dataRow{num: i + 1, cells: rows[i]})
 	}
 	return f, nil
 }
@@ -135,6 +150,7 @@ func Run(ctx context.Context, pool *pgxpool.Pool, jobID uuid.UUID) (err error) {
 	j := takeJob(jobID)
 	defer func() {
 		if rec := recover(); rec != nil {
+			log.Printf("import %s: panic: %v\n%s", jobID, rec, debug.Stack())
 			err = fmt.Errorf("import: panic: %v", rec)
 		}
 		if err != nil {

@@ -141,5 +141,14 @@ func main() {
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			log.Printf("server shutdown: %v", err)
 		}
+		// Let in-flight import batches finish; a job still running after the
+		// timeout is marked failed (server_restarted) on the next start.
+		jobsDone := make(chan struct{})
+		go func() { importSvc.Wait(); close(jobsDone) }()
+		select {
+		case <-jobsDone:
+		case <-time.After(20 * time.Second):
+			log.Printf("import jobs still running at shutdown")
+		}
 	}
 }
