@@ -2,7 +2,9 @@ package notify
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"cloud.google.com/go/civil"
@@ -34,14 +36,16 @@ func RunReminders(ctx context.Context, pool *pgxpool.Pool, today civil.Date) (in
 		return 0, err
 	}
 	sent := 0
+	var errs []error
 	for _, c := range cands {
 		n, err := sendOne(ctx, pool, c)
 		sent += n
 		if err != nil {
-			return sent, err
+			log.Printf("notify: reminder for record %s failed: %v", c.ID, err)
+			errs = append(errs, fmt.Errorf("record %s: %w", c.ID, err))
 		}
 	}
-	return sent, nil
+	return sent, errors.Join(errs...)
 }
 
 func sendOne(ctx context.Context, pool *pgxpool.Pool, c gen.DueReminderCandidatesRow) (int, error) {

@@ -152,12 +152,27 @@ func TestReminderConcurrentRunsNoDuplicates(t *testing.T) {
 	f := setup(t)
 	addRec(t, f.pool, f.tenant, f.asset, "2026-05-01", sp("2026-11-18"), ip(7))
 	today := civil.Date{Year: 2026, Month: 11, Day: 11}
-	done := make(chan struct{}, 4)
-	for i := 0; i < 4; i++ {
-		go func() { RunReminders(ctx, f.pool, today); done <- struct{}{} }()
+	type result struct {
+		n   int
+		err error
 	}
+	done := make(chan result, 4)
 	for i := 0; i < 4; i++ {
-		<-done
+		go func() {
+			n, err := RunReminders(ctx, f.pool, today)
+			done <- result{n, err}
+		}()
+	}
+	total := 0
+	for i := 0; i < 4; i++ {
+		r := <-done
+		if r.err != nil {
+			t.Fatalf("run error: %v", r.err)
+		}
+		total += r.n
+	}
+	if total != 2 {
+		t.Fatalf("sum of sent %d, want 2 (active users)", total)
 	}
 	if got := count(t, f.pool); got != 2 {
 		t.Fatalf("notifications %d", got)

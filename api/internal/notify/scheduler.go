@@ -29,18 +29,22 @@ func nextRun(now time.Time, loc *time.Location) time.Time {
 	return t
 }
 
-func (s *Scheduler) run(ctx context.Context) {
-	clock := s.Clock
+// defaults returns the clock and location with nil values replaced.
+func (s *Scheduler) defaults() (func() time.Time, *time.Location) {
+	clock, loc := s.Clock, s.Loc
 	if clock == nil {
 		clock = time.Now
 	}
-	loc := s.Loc
 	if loc == nil {
 		loc = time.UTC
 	}
-	n, err := RunReminders(ctx, s.Pool, civil.DateOf(clock().In(loc)))
+	return clock, loc
+}
+
+func (s *Scheduler) run(ctx context.Context, now time.Time, loc *time.Location) {
+	n, err := RunReminders(ctx, s.Pool, civil.DateOf(now.In(loc)))
 	if err != nil {
-		log.Printf("notify: reminder run failed: %v", err)
+		log.Printf("notify: reminder run finished with errors (sent %d): %v", n, err)
 		return
 	}
 	log.Printf("notify: reminder run sent %d notifications", n)
@@ -48,15 +52,8 @@ func (s *Scheduler) run(ctx context.Context) {
 
 // Start blocks until ctx is cancelled; call it in a goroutine.
 func (s *Scheduler) Start(ctx context.Context) {
-	clock := s.Clock
-	if clock == nil {
-		clock = time.Now
-	}
-	loc := s.Loc
-	if loc == nil {
-		loc = time.UTC
-	}
-	s.run(ctx)
+	clock, loc := s.defaults()
+	s.run(ctx, clock(), loc)
 	for {
 		now := clock()
 		timer := time.NewTimer(nextRun(now, loc).Sub(now))
@@ -65,7 +62,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 			timer.Stop()
 			return
 		case <-timer.C:
-			s.run(ctx)
+			s.run(ctx, clock(), loc)
 		}
 	}
 }
