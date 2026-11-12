@@ -52,10 +52,11 @@ func ConditionLabel(code string) (label string, ok bool) {
 }
 
 const (
-	pageMargin = 20.0
-	contentW   = 210 - 2*pageMargin
-	lh         = 5.6 // body line height
-	maxNotes   = 800 // runes of notes kept in the document
+	pageMargin  = 20.0
+	contentW    = 210 - 2*pageMargin
+	lh          = 5.6 // body line height
+	maxNotes    = 800 // runes of notes kept in the document
+	maxWarranty = 200 // runes of warranty text kept in the document
 )
 
 func dash(s string) string {
@@ -106,12 +107,8 @@ func BAST(w io.Writer, d BASTData) error {
 
 	// Warranty and notes.
 	p.SetY(p.GetY() + 4)
-	labelled(p, "Garansi", dash(d.Warranty))
-	notes := clean(d.Notes)
-	if r := []rune(notes); len(r) > maxNotes {
-		notes = string(r[:maxNotes]) + "…"
-	}
-	labelled(p, "Catatan", dash(notes))
+	labelled(p, "Garansi", dash(capRunes(clean(d.Warranty), maxWarranty)))
+	labelled(p, "Catatan", dash(capRunes(clean(d.Notes), maxNotes)))
 
 	// Handover statement.
 	p.SetY(p.GetY() + 4)
@@ -256,4 +253,12 @@ func signatures(p *fpdf.Fpdf, d BASTData) {
 		p.SetXY(x+5, ly+1)
 		p.CellFormat(inner, lh, fit(p, dash(c.position), inner), "", 0, "C", false, 0, "")
 	}
+}
+
+// capRunes keeps at most n runes of s, marking a cut with "…".
+func capRunes(s string, n int) string {
+	if r := []rune(s); len(r) > n {
+		return string(r[:n]) + "…"
+	}
+	return s
 }
