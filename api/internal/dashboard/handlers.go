@@ -121,6 +121,7 @@ func (s *Service) attention(ctx context.Context, tenantID uuid.UUID) ([]Attentio
 
 // upcoming applies the shared latest-record rule first (one record per asset),
 // then keeps those whose next_date is set and within today+30 (overdue included).
+// Archived and lost assets are excluded: nobody will service them.
 func (s *Service) upcoming(ctx context.Context, tenantID uuid.UUID, today civil.Date) ([]UpcomingItem, error) {
 	limit := today.AddDays(upcomingDays)
 	rows, err := s.pool.Query(ctx, `SELECT a.id, a.asset_tag, a.name, m.next_date
@@ -132,6 +133,7 @@ func (s *Service) upcoming(ctx context.Context, tenantID uuid.UUID, today civil.
 		) m
 		JOIN assets a ON a.id = m.asset_id AND a.tenant_id = $1
 		WHERE m.next_date IS NOT NULL AND m.next_date <= $2::date
+			AND a.status NOT IN ('archived', 'lost')
 		ORDER BY m.next_date ASC, a.id ASC
 		LIMIT $3`, tenantID, limit.String(), listLimit)
 	if err != nil {

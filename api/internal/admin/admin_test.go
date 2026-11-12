@@ -2,8 +2,10 @@ package admin_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"testing"
 
@@ -57,10 +59,13 @@ func setup(t *testing.T) *env {
 	}
 	as := auth.NewService(pool, false)
 	ad := admin.NewService(pool, as)
-	srv := httptest.NewServer(httpx.NewRouter(httpx.Deps{Pool: pool, Register: func(m *http.ServeMux) {
-		as.Register(m)
-		ad.Register(m)
-	}}))
+	// Loopback is the trusted proxy so tests can pick a client IP via X-Real-IP.
+	srv := httptest.NewServer(httpx.NewRouter(httpx.Deps{Pool: pool,
+		TrustedProxies: []netip.Prefix{netip.MustParsePrefix("127.0.0.0/8"), netip.MustParsePrefix("::1/128")},
+		Register: func(m *http.ServeMux) {
+			as.Register(m)
+			ad.Register(m)
+		}}))
 	t.Cleanup(srv.Close)
 	c := testutil.Client(t, srv.URL)
 	res := c.Do("POST", "/api/admin/auth/login", map[string]string{"email": adminEmail, "password": adminPass})
@@ -254,6 +259,51 @@ func TestAdminLoginLogoutAndBadCredentials(t *testing.T) {
 	// A user-login endpoint must not accept admin credentials.
 	if r := testutil.Client(t, e.srv.URL).Login(adminEmail, adminPass); r.StatusCode != 401 {
 		t.Fatalf("admin creds on user login %d", r.StatusCode)
+	}
+}
+
+func TestAdminLoginIPRateLimitAcrossEmails(t *testing.T) {
+	e := setup(t)
+	c := testutil.Client(t, e.srv.URL)
+	c.Header.Set("X-Real-IP", "198.51.100.9")
+	login := func(c *testutil.APIClient, email, pw string) *http.Response {
+		return c.Do("POST", "/api/admin/auth/login", map[string]string{"email": email, "password": pw})
+	}
+	for i := 0; i < 50; i++ {
+		r := login(c, fmt.Sprintf("spray%d@assetku.test", i), "wrong")
+		r.Body.Close()
+		if r.StatusCode != 401 {
+			t.Fatalf("attempt %d status %d", i+1, r.StatusCode)
+		}
+	}
+	r := login(c, adminEmail, adminPass)
+	var er errResp
+	c.JSON(r, &er)
+	if r.StatusCode != 429 || er.Error.Code != "rate_limited" {
+		t.Fatalf("51st: %d %+v", r.StatusCode, er)
+	}
+	other := testutil.Client(t, e.srv.URL)
+	other.Header.Set("X-Real-IP", "198.51.100.10")
+	if r := login(other, adminEmail, adminPass); r.StatusCode != 200 {
+		t.Fatalf("other ip %d", r.StatusCode)
+	} else {
+		r.Body.Close()
+	}
+}
+
+func TestAdminReloginDeletesPreviousSession(t *testing.T) {
+	e := setup(t) // e.admin already holds one session
+	r := e.admin.Do("POST", "/api/admin/auth/login", map[string]string{"email": adminEmail, "password": adminPass})
+	r.Body.Close()
+	if r.StatusCode != 200 {
+		t.Fatalf("relogin %d", r.StatusCode)
+	}
+	var n int
+	if err := e.pool.QueryRow(context.Background(), `SELECT count(*) FROM sessions WHERE subject_type='super_admin'`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 1 {
+		t.Fatalf("admin sessions %d", n)
 	}
 }
 

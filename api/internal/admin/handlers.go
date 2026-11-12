@@ -81,11 +81,12 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 	}
 	email := strings.TrimSpace(in.Email)
 	lim := s.auth.Limiter()
-	key := "admin|" + auth.LoginKey(auth.ClientIP(r), email)
-	if !lim.Allowed(key) {
+	ip := auth.ClientIP(r)
+	key := "admin|" + auth.LoginKey(ip, email)
+	if !lim.Allowed(ip, key) {
 		return errRateLimited
 	}
-	fail := func() error { lim.Fail(key); return errInvalidCreds }
+	fail := func() error { lim.Fail(ip, key); return errInvalidCreds }
 	a, err := s.q.GetSuperAdminForLogin(r.Context(), email)
 	if errors.Is(err, pgx.ErrNoRows) {
 		auth.BurnPasswordCheck(in.Password)
@@ -97,8 +98,8 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 	if !auth.CheckPassword(a.PasswordHash, in.Password) {
 		return fail()
 	}
-	lim.Reset(key)
-	token, err := s.auth.CreateSession(r.Context(), auth.SubjectAdmin, a.ID)
+	lim.Succeeded(key)
+	token, err := s.auth.StartSession(r, auth.SubjectAdmin, a.ID)
 	if err != nil {
 		return err
 	}

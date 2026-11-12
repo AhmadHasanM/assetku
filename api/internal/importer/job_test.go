@@ -245,3 +245,21 @@ func TestFailInterrupted(t *testing.T) {
 	}
 	expectError(t, e.a, e.a.Do("GET", "/api/imports/"+id.String()+"/report.csv", nil), http.StatusConflict, "import_not_finished")
 }
+
+func TestRunUnexpectedErrorStoresStableCode(t *testing.T) {
+	e := setupHTTP(t)
+	ctx := context.Background()
+	var tenant, id uuid.UUID
+	_ = e.pool.QueryRow(ctx, `SELECT id FROM tenants WHERE name = 'A'`).Scan(&tenant)
+	_ = e.pool.QueryRow(ctx, `INSERT INTO imports (tenant_id, file_name) VALUES ($1, 'h.csv') RETURNING id`, tenant).Scan(&id)
+	putJob(id, &job{})
+	cancelled, cancel := context.WithCancel(ctx)
+	cancel() // the first DB call fails with a raw driver error
+	if err := Run(cancelled, e.pool, id); err == nil {
+		t.Fatal("Run with cancelled context succeeded")
+	}
+	v := waitDone(t, e.a, id.String())
+	if v.Status != "failed" || v.Error != "internal" {
+		t.Errorf("job=%+v", v)
+	}
+}

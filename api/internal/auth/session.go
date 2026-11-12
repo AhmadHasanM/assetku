@@ -38,7 +38,7 @@ type Service struct {
 	pool         *pgxpool.Pool
 	q            *gen.Queries
 	cookieSecure bool
-	limiter      *RateLimiter
+	limiter      *LoginLimiter
 	now          func() time.Time
 }
 
@@ -47,7 +47,7 @@ func NewService(pool *pgxpool.Pool, cookieSecure bool) *Service {
 		pool:         pool,
 		q:            gen.New(pool),
 		cookieSecure: cookieSecure,
-		limiter:      NewRateLimiter(10, 15*time.Minute),
+		limiter:      NewLoginLimiter(),
 		now:          time.Now,
 	}
 }
@@ -71,6 +71,18 @@ func (s *Service) CreateSession(ctx context.Context, subjectType string, subject
 		ExpiresAt:   s.now().Add(sessionTTL),
 	})
 	return token, err
+}
+
+// StartSession replaces the session the request's cookie points at (if any)
+// with a new one for the subject and returns the raw token. Dropping the old
+// row on re-login keeps a browser from piling up live sessions.
+func (s *Service) StartSession(r *http.Request, subjectType string, subjectID uuid.UUID) (string, error) {
+	if ck, err := r.Cookie(httpx.SessionCookieName); err == nil && ck.Value != "" {
+		if err := s.DestroySession(r.Context(), ck.Value); err != nil {
+			return "", err
+		}
+	}
+	return s.CreateSession(r.Context(), subjectType, subjectID)
 }
 
 // DestroySession deletes the session identified by the raw token.
@@ -152,4 +164,4 @@ func (s *Service) ResolveAdmin(ctx context.Context, token string) (AdminPrincipa
 }
 
 // Limiter exposes the login rate limiter so other login endpoints (admin) share it.
-func (s *Service) Limiter() *RateLimiter { return s.limiter }
+func (s *Service) Limiter() *LoginLimiter { return s.limiter }

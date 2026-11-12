@@ -48,6 +48,9 @@ func CreateUser(t *testing.T, pool *pgxpool.Pool, tenantID uuid.UUID, email, pas
 // APIClient is an HTTP client with a cookie jar that echoes the CSRF cookie
 // into the X-CSRF-Token header on every request.
 type APIClient struct {
+	// Header holds extra headers sent on every request (e.g. X-Real-IP).
+	Header http.Header
+
 	t    *testing.T
 	base string
 	http *http.Client
@@ -65,7 +68,7 @@ func Client(t *testing.T, srvURL string) *APIClient {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &APIClient{t: t, base: srvURL, http: &http.Client{Jar: jar}, url: u}
+	return &APIClient{Header: http.Header{}, t: t, base: srvURL, http: &http.Client{Jar: jar}, url: u}
 }
 
 // Cookie returns the value of the named cookie in the jar, or "".
@@ -105,6 +108,9 @@ func (c *APIClient) do(method, path string, body any, csrf bool) *http.Response 
 	}
 	if csrf {
 		req.Header.Set("X-CSRF-Token", c.Cookie("csrf_token"))
+	}
+	for k, v := range c.Header {
+		req.Header[k] = v
 	}
 	res, err := c.http.Do(req)
 	if err != nil {
@@ -157,6 +163,9 @@ func (c *APIClient) DoRaw(method, path string, body io.Reader, contentType strin
 	}
 	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("X-CSRF-Token", c.Cookie("csrf_token"))
+	for k, v := range c.Header {
+		req.Header[k] = v
+	}
 	res, err := c.http.Do(req)
 	if err != nil {
 		c.t.Fatal(err)

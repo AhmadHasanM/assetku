@@ -48,6 +48,7 @@ FROM (
 JOIN assets a ON a.id = l.asset_id
 JOIN tenants t ON t.id = l.tenant_id
 WHERE t.active
+  AND a.status NOT IN ('archived', 'lost')
   AND l.next_date IS NOT NULL
   AND l.reminder_days IS NOT NULL
   AND l.reminder_sent_at IS NULL

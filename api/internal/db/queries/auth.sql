@@ -35,6 +35,9 @@ UPDATE sessions SET expires_at = $2 WHERE token_hash = $1;
 -- name: DeleteSession :exec
 DELETE FROM sessions WHERE token_hash = $1;
 
+-- name: DeleteExpiredSessions :execrows
+DELETE FROM sessions WHERE expires_at < now();
+
 -- name: DeleteSessionsForSubject :exec
 DELETE FROM sessions WHERE subject_type = $1 AND subject_id = $2;
 

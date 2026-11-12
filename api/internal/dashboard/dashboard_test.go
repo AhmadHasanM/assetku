@@ -152,6 +152,21 @@ func TestUpcomingOverdueWindowAndLatestRule(t *testing.T) {
 	}
 }
 
+func TestUpcomingExcludesArchivedAndLost(t *testing.T) {
+	e := setup(t)
+	arch := e.asset(t, e.tenantA, "AST-ARCH", "archived")
+	e.record(t, e.tenantA, arch, "2026-10-01", sp("2026-11-01"))
+	lost := e.asset(t, e.tenantA, "AST-LOST", "lost")
+	e.record(t, e.tenantA, lost, "2026-10-01", sp("2026-11-20"))
+	live := e.asset(t, e.tenantA, "AST-LIVE", "in_use")
+	e.record(t, e.tenantA, live, "2026-10-01", sp("2026-11-20"))
+
+	d := fetch(t, e.a)
+	if len(d.UpcomingMaintenance) != 1 || d.UpcomingMaintenance[0].AssetTag != "AST-LIVE" {
+		t.Fatalf("upcoming %+v", d.UpcomingMaintenance)
+	}
+}
+
 func TestDashboardTenantIsolation(t *testing.T) {
 	e := setup(t)
 	b1 := e.asset(t, e.tenantB, "AST-BBBB", "damaged")

@@ -19,6 +19,42 @@ func NewRateLimiter(max int, window time.Duration) *RateLimiter {
 	return &RateLimiter{max: max, window: window, now: time.Now, fails: map[string][]time.Time{}}
 }
 
+// LoginLimiter enforces both login failure limits: per client IP + account
+// key (credential guessing on one account) and per client IP alone (spraying
+// many accounts from one address). An attempt is refused when either trips.
+type LoginLimiter struct {
+	account *RateLimiter
+	ip      *RateLimiter
+}
+
+const (
+	accountFailMax = 10
+	ipFailMax      = 50
+	loginWindow    = 15 * time.Minute
+)
+
+func NewLoginLimiter() *LoginLimiter {
+	return &LoginLimiter{
+		account: NewRateLimiter(accountFailMax, loginWindow),
+		ip:      NewRateLimiter(ipFailMax, loginWindow),
+	}
+}
+
+// Allowed reports whether another attempt from ip for accountKey is permitted.
+func (l *LoginLimiter) Allowed(ip, accountKey string) bool {
+	return l.ip.Allowed(ip) && l.account.Allowed(accountKey)
+}
+
+// Fail records a failed attempt against both limits.
+func (l *LoginLimiter) Fail(ip, accountKey string) {
+	l.ip.Fail(ip)
+	l.account.Fail(accountKey)
+}
+
+// Succeeded clears the account failures. The per-IP count is kept, so one
+// valid login cannot wipe the evidence of spraying other accounts.
+func (l *LoginLimiter) Succeeded(accountKey string) { l.account.Reset(accountKey) }
+
 // LoginKey builds the limiter key from client IP and email.
 func LoginKey(ip, email string) string { return ip + "|" + strings.ToLower(strings.TrimSpace(email)) }
 

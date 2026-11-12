@@ -17,6 +17,7 @@ import (
 
 	"assetku/api/internal/asset"
 	"assetku/api/internal/auth"
+	"assetku/api/internal/db/gen"
 	"assetku/api/internal/history"
 	"assetku/api/internal/httpx"
 	"assetku/api/internal/masterdata"
@@ -571,5 +572,31 @@ func TestTxCoreImportEvents(t *testing.T) {
 
 	if _, err := svc.Get(ctx, e.tenantB, a.ID); !errors.Is(err, asset.ErrNotFound) {
 		t.Fatalf("cross-tenant service get: %v", err)
+	}
+}
+
+// GetAsset must not leak another tenant's master-data name even when a row
+// points at it (the FK alone does not enforce the tenant).
+func TestGetAssetIgnoresForeignTenantMasterData(t *testing.T) {
+	pool := testutil.NewDB(t)
+	ctx := context.Background()
+	a := testutil.CreateTenant(t, pool, "A")
+	b := testutil.CreateTenant(t, pool, "B")
+	var loc, org, sup, id uuid.UUID
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	must(pool.QueryRow(ctx, `INSERT INTO locations (tenant_id, name) VALUES ($1, 'B-Loc') RETURNING id`, b).Scan(&loc))
+	must(pool.QueryRow(ctx, `INSERT INTO organizations (tenant_id, name) VALUES ($1, 'B-Org') RETURNING id`, b).Scan(&org))
+	must(pool.QueryRow(ctx, `INSERT INTO suppliers (tenant_id, name) VALUES ($1, 'B-Sup') RETURNING id`, b).Scan(&sup))
+	must(pool.QueryRow(ctx, `INSERT INTO assets (tenant_id, name, asset_tag, category, status, location_id, organization_id, supplier_id)
+		VALUES ($1, 'X', 'AST-XTENANT', 'other', 'available', $2, $3, $4) RETURNING id`, a, loc, org, sup).Scan(&id))
+	r, err := gen.New(pool).GetAsset(ctx, gen.GetAssetParams{TenantID: a, ID: id})
+	must(err)
+	if r.LocationName != nil || r.OrganizationName != nil || r.SupplierName != nil {
+		t.Fatalf("leaked names: %v %v %v", r.LocationName, r.OrganizationName, r.SupplierName)
 	}
 }

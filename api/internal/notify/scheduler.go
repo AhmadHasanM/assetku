@@ -8,11 +8,14 @@ import (
 
 	"cloud.google.com/go/civil"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"assetku/api/internal/db/gen"
 )
 
 const runHour = 7
 
-// Scheduler runs RunReminders once at start and then daily at 07:00 in Loc.
+// Scheduler runs the daily jobs (expired-session purge, then RunReminders)
+// once at start and then daily at 07:00 in Loc.
 type Scheduler struct {
 	Pool  *pgxpool.Pool
 	Loc   *time.Location
@@ -42,6 +45,11 @@ func (s *Scheduler) defaults() (func() time.Time, *time.Location) {
 }
 
 func (s *Scheduler) run(ctx context.Context, now time.Time, loc *time.Location) {
+	if purged, err := gen.New(s.Pool).DeleteExpiredSessions(ctx); err != nil {
+		log.Printf("notify: expired session purge failed: %v", err)
+	} else if purged > 0 {
+		log.Printf("notify: purged %d expired sessions", purged)
+	}
 	n, err := RunReminders(ctx, s.Pool, civil.DateOf(now.In(loc)))
 	if err != nil {
 		log.Printf("notify: reminder run finished with errors (sent %d): %v", n, err)

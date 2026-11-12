@@ -5,9 +5,9 @@ SELECT a.id, a.name, a.asset_tag, a.category, a.manufacturer, a.model, a.serial_
        a.created_at, a.updated_at,
        l.name AS location_name, o.name AS organization_name, s.name AS supplier_name
 FROM assets a
-LEFT JOIN locations l ON l.id = a.location_id
-LEFT JOIN organizations o ON o.id = a.organization_id
-LEFT JOIN suppliers s ON s.id = a.supplier_id
+LEFT JOIN locations l ON l.id = a.location_id AND l.tenant_id = a.tenant_id
+LEFT JOIN organizations o ON o.id = a.organization_id AND o.tenant_id = a.tenant_id
+LEFT JOIN suppliers s ON s.id = a.supplier_id AND s.tenant_id = a.tenant_id
 WHERE a.tenant_id = @tenant_id AND a.id = @id;
 
 -- name: LockAsset :one

@@ -1,8 +1,10 @@
 package auth_test
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"strings"
 	"testing"
@@ -187,6 +189,76 @@ func TestRateLimitAfter10Failures(t *testing.T) {
 	res.Body.Close()
 	if res.StatusCode != 200 {
 		t.Fatalf("other email status %d", res.StatusCode)
+	}
+}
+
+// behindProxy starts a server that trusts loopback as the proxy, so each
+// client can claim its own address through X-Real-IP.
+func behindProxy(t *testing.T) (*httptest.Server, func(name, email, pw string)) {
+	t.Helper()
+	pool := testutil.NewDB(t)
+	svc := auth.NewService(pool, false)
+	srv := httptest.NewServer(httpx.NewRouter(httpx.Deps{Pool: pool, Register: svc.Register,
+		TrustedProxies: []netip.Prefix{netip.MustParsePrefix("127.0.0.0/8"), netip.MustParsePrefix("::1/128")}}))
+	t.Cleanup(srv.Close)
+	return srv, func(tenant, email, pw string) {
+		testutil.CreateUser(t, pool, testutil.CreateTenant(t, pool, tenant), email, pw)
+	}
+}
+
+func clientFrom(t *testing.T, srv *httptest.Server, ip string) *testutil.APIClient {
+	c := testutil.Client(t, srv.URL)
+	c.Header.Set("X-Real-IP", ip)
+	return c
+}
+
+func TestIPRateLimitAcrossEmails(t *testing.T) {
+	srv, seed := behindProxy(t)
+	seed("Acme", "a@acme.test", "secret-pass")
+	c := clientFrom(t, srv, "203.0.113.7")
+	for i := 0; i < 50; i++ {
+		res := c.Login(fmt.Sprintf("spray%d@acme.test", i), "wrong")
+		res.Body.Close()
+		if res.StatusCode != 401 {
+			t.Fatalf("attempt %d status %d", i+1, res.StatusCode)
+		}
+	}
+	// 51st attempt from the same IP is refused, even with valid credentials.
+	res := c.Login("a@acme.test", "secret-pass")
+	var er errResp
+	status := res.StatusCode
+	c.JSON(res, &er)
+	if status != 429 || er.Error.Code != "rate_limited" {
+		t.Fatalf("51st: got %d %+v", status, er)
+	}
+	// Another IP is unaffected.
+	res = clientFrom(t, srv, "203.0.113.8").Login("a@acme.test", "secret-pass")
+	res.Body.Close()
+	if res.StatusCode != 200 {
+		t.Fatalf("other ip status %d", res.StatusCode)
+	}
+}
+
+func TestReloginDeletesPreviousSession(t *testing.T) {
+	pool := testutil.NewDB(t)
+	svc := auth.NewService(pool, false)
+	srv := httptest.NewServer(httpx.NewRouter(httpx.Deps{Pool: pool, Register: svc.Register}))
+	t.Cleanup(srv.Close)
+	testutil.CreateUser(t, pool, testutil.CreateTenant(t, pool, "Acme"), "a@acme.test", "secret-pass")
+	c := testutil.Client(t, srv.URL)
+	for i := 0; i < 3; i++ {
+		res := c.Login("a@acme.test", "secret-pass")
+		res.Body.Close()
+		if res.StatusCode != 200 {
+			t.Fatalf("login %d status %d", i+1, res.StatusCode)
+		}
+	}
+	var n int
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM sessions`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 1 {
+		t.Fatalf("sessions after 3 logins on one browser: %d", n)
 	}
 }
 

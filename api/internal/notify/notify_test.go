@@ -148,6 +148,20 @@ func TestReminderSkipsInactiveTenant(t *testing.T) {
 	}
 }
 
+func TestReminderSkipsArchivedAndLostAssets(t *testing.T) {
+	for _, status := range []string{"archived", "lost"} {
+		t.Run(status, func(t *testing.T) {
+			f := setup(t)
+			addRec(t, f.pool, f.tenant, f.asset, "2026-05-01", sp("2026-11-18"), ip(7))
+			mustExec(t, f.pool, `UPDATE assets SET status=$2 WHERE id=$1`, f.asset, status)
+			n, err := RunReminders(ctx, f.pool, civil.Date{Year: 2026, Month: 11, Day: 15})
+			if err != nil || n != 0 || count(t, f.pool) != 0 {
+				t.Fatalf("n=%d err=%v", n, err)
+			}
+		})
+	}
+}
+
 func TestReminderConcurrentRunsNoDuplicates(t *testing.T) {
 	f := setup(t)
 	addRec(t, f.pool, f.tenant, f.asset, "2026-05-01", sp("2026-11-18"), ip(7))
@@ -268,6 +282,27 @@ func TestUnreadCountsBeyondTwenty(t *testing.T) {
 	c1.JSON(res, &l)
 	if l.Unread != 25 || len(l.Items) != 20 {
 		t.Fatalf("unread %d items %d", l.Unread, len(l.Items))
+	}
+}
+
+func TestSchedulerRunPurgesExpiredSessions(t *testing.T) {
+	f := setup(t)
+	mustExec(t, f.pool, `INSERT INTO sessions (token_hash, subject_type, subject_id, expires_at) VALUES
+		('\x01', 'user', $1, now() - interval '1 minute'),
+		('\x02', 'user', $1, now() + interval '1 day')`, f.u1)
+	(&Scheduler{Pool: f.pool}).run(ctx, time.Now(), time.UTC)
+	var hashes []string
+	rows, err := f.pool.Query(ctx, `SELECT encode(token_hash, 'hex') FROM sessions`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for rows.Next() {
+		var h string
+		rows.Scan(&h)
+		hashes = append(hashes, h)
+	}
+	if len(hashes) != 1 || hashes[0] != "02" {
+		t.Fatalf("sessions left %v", hashes)
 	}
 }
 

@@ -133,6 +133,8 @@ Untuk restore ke VPS baru, jalankan `docker compose up -d db` dulu dan tunggu `h
 | `TRUSTED_PROXIES` | Opsional. Daftar CIDR yang boleh mengirim `X-Real-IP` (dipakai rate limit login). Default compose memakai rentang privat, yaitu nginx di network compose. Kosong berarti tidak ada yang dipercaya. |
 | `CERTS_DIR` | Opsional. Direktori keluaran certbot, default `/etc/letsencrypt`. |
 
+Catatan IPv6: nginx hanya listen di IPv4. Bila Docker berjalan tanpa IPv6, klien IPv6 masuk lewat proxy Docker dan nginx melihat IP gateway, sehingga semua klien IPv6 berbagi satu IP untuk rate limit login (batas gagal per IP: 50 per 15 menit). Aktifkan IPv6 di Docker bila banyak pengguna datang lewat IPv6.
+
 ## Pengembangan lokal (tanpa Docker)
 
 ```bash

@@ -142,9 +142,20 @@ func takeJob(id uuid.UUID) *job {
 	return j
 }
 
+// jobErrorCode is the stable code stored in imports.error and shown to the
+// tenant. Unexpected failures store errInternal; their detail is only logged.
+type jobErrorCode string
+
+func (c jobErrorCode) Error() string { return string(c) }
+
+const (
+	errInternal       jobErrorCode = "internal"
+	errJobDataMissing jobErrorCode = "job_data_missing"
+)
+
 // Run executes the queued import jobID: it applies the rows held in memory
 // for it, updating processed_rows every batchSize rows, and finishes with
-// status done and the result, or failed and the error text. Rows committed
+// status done and the result, or failed and an error code. Rows committed
 // before a failure stay imported.
 func Run(ctx context.Context, pool *pgxpool.Pool, jobID uuid.UUID) (err error) {
 	j := takeJob(jobID)
@@ -154,15 +165,19 @@ func Run(ctx context.Context, pool *pgxpool.Pool, jobID uuid.UUID) (err error) {
 			err = fmt.Errorf("import: panic: %v", rec)
 		}
 		if err != nil {
+			code := errInternal
+			if !errors.As(err, &code) {
+				log.Printf("import %s: failed: %v", jobID, err)
+			}
 			if _, uerr := pool.Exec(context.WithoutCancel(ctx),
 				`UPDATE imports SET status = 'failed', error = $2, finished_at = now() WHERE id = $1`,
-				jobID, err.Error()); uerr != nil {
+				jobID, string(code)); uerr != nil {
 				log.Printf("import %s: mark failed: %v", jobID, uerr)
 			}
 		}
 	}()
 	if j == nil {
-		return errors.New("job_data_missing")
+		return errJobDataMissing
 	}
 	if _, err := pool.Exec(ctx, `UPDATE imports SET status = 'running' WHERE id = $1`, jobID); err != nil {
 		return err

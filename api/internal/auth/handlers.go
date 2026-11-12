@@ -82,11 +82,12 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	email := strings.TrimSpace(in.Email)
-	key := LoginKey(ClientIP(r), email)
-	if !s.limiter.Allowed(key) {
+	ip := ClientIP(r)
+	key := LoginKey(ip, email)
+	if !s.limiter.Allowed(ip, key) {
 		return errRateLimited
 	}
-	fail := func() error { s.limiter.Fail(key); return errInvalidCreds }
+	fail := func() error { s.limiter.Fail(ip, key); return errInvalidCreds }
 
 	u, err := s.q.GetUserForLogin(r.Context(), email)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -99,8 +100,8 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) error {
 	if !CheckPassword(u.PasswordHash, in.Password) || !u.UserActive || !u.TenantActive {
 		return fail()
 	}
-	s.limiter.Reset(key)
-	token, err := s.CreateSession(r.Context(), SubjectUser, u.ID)
+	s.limiter.Succeeded(key)
+	token, err := s.StartSession(r, SubjectUser, u.ID)
 	if err != nil {
 		return err
 	}
