@@ -245,5 +245,66 @@
       "filteredHint": "Coba kata kunci lain atau hapus filter."
     },
     "loadFailed": "Asset tidak dapat dimuat."
+  },
+  "assetForm": {
+    "addTitle": "Tambah Asset",
+    "editTitle": "Edit Asset",
+    "back": "Kembali",
+    "sections": {
+      "general": "Informasi Umum",
+      "placement": "Status & Penempatan",
+      "purchase": "Pembelian & Garansi",
+      "notes": "Catatan"
+    },
+    "fields": {
+      "name": "Nama Asset",
+      "asset_tag": "Asset Tag",
+      "category": "Kategori",
+      "manufacturer": "Pabrikan",
+      "model": "Model",
+      "serial_number": "Serial Number",
+      "status": "Status",
+      "location": "Lokasi",
+      "assigned_to": "Dipegang Oleh",
+      "organization": "Organisasi",
+      "supplier": "Pemasok",
+      "order_number": "No. PO/Order",
+      "purchase_date": "Tanggal Beli",
+      "purchase_cost": "Harga Beli",
+      "warranty_months": "Garansi (bulan)",
+      "warranty_expires": "Garansi Berakhir",
+      "notes": "Catatan"
+    },
+    "hints": {
+      "assetTagNew": "Kosongkan agar dibuat otomatis.",
+      "assetTagEdit": "Kosongkan untuk memakai tag saat ini.",
+      "warrantyExpires": "Isi tanggal beli dan garansi untuk melihatnya.",
+      "purchaseCost": "Dalam Rupiah, misalnya 12500000"
+    },
+    "placeholders": {
+      "category": "Pilih kategori",
+      "master": "Pilih atau ketik untuk menambah",
+      "date": "Pilih tanggal",
+      "assignee": "Nama pemegang"
+    },
+    "combobox": {
+      "search": "Cari atau ketik nama baru…",
+      "none": "Tidak ada",
+      "empty": "Tidak ditemukan.",
+      "create": "+ Tambah \"{name}\"",
+      "created": "\"{name}\" ditambahkan.",
+      "loading": "Memuat…"
+    },
+    "clearDate": "Hapus tanggal",
+    "suggestions": "Saran",
+    "saved": "Asset tersimpan.",
+    "loadFailed": "Gagal memuat asset ini.",
+    "notFound": "Asset ini tidak ada atau sudah dihapus.",
+    "leave": {
+      "title": "Keluar tanpa menyimpan?",
+      "description": "Perubahan pada form ini akan hilang.",
+      "stay": "Lanjut mengisi",
+      "confirm": "Keluar"
+    }
   }
 }

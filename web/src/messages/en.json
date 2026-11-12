@@ -245,5 +245,66 @@
       "filteredHint": "Try a different search or clear the filters."
     },
     "loadFailed": "Could not load assets."
+  },
+  "assetForm": {
+    "addTitle": "Add Asset",
+    "editTitle": "Edit Asset",
+    "back": "Back",
+    "sections": {
+      "general": "General Information",
+      "placement": "Status & Placement",
+      "purchase": "Purchase & Warranty",
+      "notes": "Notes"
+    },
+    "fields": {
+      "name": "Asset Name",
+      "asset_tag": "Asset Tag",
+      "category": "Category",
+      "manufacturer": "Manufacturer",
+      "model": "Model",
+      "serial_number": "Serial Number",
+      "status": "Status",
+      "location": "Location",
+      "assigned_to": "Assigned To",
+      "organization": "Organization",
+      "supplier": "Supplier",
+      "order_number": "Order Number",
+      "purchase_date": "Purchase Date",
+      "purchase_cost": "Purchase Cost",
+      "warranty_months": "Warranty (months)",
+      "warranty_expires": "Warranty Expires",
+      "notes": "Notes"
+    },
+    "hints": {
+      "assetTagNew": "Leave blank to generate one automatically.",
+      "assetTagEdit": "Leave blank to keep the current tag.",
+      "warrantyExpires": "Fill in the purchase date and warranty to see it.",
+      "purchaseCost": "In Rupiah, e.g. 12500000"
+    },
+    "placeholders": {
+      "category": "Choose a category",
+      "master": "Choose or type to add",
+      "date": "Pick a date",
+      "assignee": "Name of the holder"
+    },
+    "combobox": {
+      "search": "Search or type a new name…",
+      "none": "None",
+      "empty": "Nothing found.",
+      "create": "+ Add \"{name}\"",
+      "created": "\"{name}\" added.",
+      "loading": "Loading…"
+    },
+    "clearDate": "Clear date",
+    "suggestions": "Suggestions",
+    "saved": "Asset saved.",
+    "loadFailed": "Could not load this asset.",
+    "notFound": "This asset does not exist or was deleted.",
+    "leave": {
+      "title": "Leave without saving?",
+      "description": "Your changes to this form will be lost.",
+      "stay": "Keep editing",
+      "confirm": "Leave"
+    }
   }
 }

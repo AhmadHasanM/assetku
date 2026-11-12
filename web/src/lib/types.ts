@@ -77,3 +77,47 @@ export interface AssetListResponse {
   page: number
   page_size: number
 }
+
+/** A referenced master data row ({id, name}). */
+export interface MasterRef {
+  id: string
+  name: string
+}
+
+/** Body of POST /api/assets and PUT /api/assets/{id}. A missing or blank asset_tag means auto (create) or keep (update). */
+export interface AssetInput {
+  name: string
+  asset_tag?: string
+  category: string
+  manufacturer: string
+  model: string
+  serial_number: string
+  status: string
+  location_id: string | null
+  assigned_to: string
+  organization_id: string | null
+  supplier_id: string | null
+  order_number: string
+  /** yyyy-mm-dd */
+  purchase_date: string | null
+  /** Decimal string, e.g. "12500000" or "12500000.50". */
+  purchase_cost: string | null
+  warranty_months: number | null
+  notes: string
+}
+
+/** GET /api/assets/{id} (also the POST/PUT response). */
+export interface Asset extends Required<Omit<AssetInput, "category" | "status">> {
+  id: string
+  category: AssetCategory
+  status: AssetStatus
+  location: MasterRef | null
+  organization: MasterRef | null
+  supplier: MasterRef | null
+  /** "12500000.00" */
+  purchase_cost: string | null
+  warranty_expires: string | null
+  warranty_expired: boolean
+  created_at: string
+  updated_at: string
+}
