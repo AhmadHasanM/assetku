@@ -50,7 +50,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid items-start gap-4 lg:grid-cols-2 lg:gap-6">
-          <AttentionList items={d.attention} />
+          <AttentionList items={d.attention} total={d.summary.needs_attention} />
           <UpcomingMaintenance items={d.upcoming_maintenance} />
           <CompositionCharts byCategory={d.by_category} byStatus={d.by_status} />
         </div>

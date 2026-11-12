@@ -75,7 +75,9 @@ export function formatRelative(iso: string | null | undefined, locale: Locale, n
   // Clock skew can put a fresh timestamp slightly in the future; show it as "now".
   let value = Math.min(0, (t - now.getTime()) / 1000)
   for (const [unit, size] of RELATIVE_STEPS) {
-    if (Math.abs(value) < size) return rtf.format(Math.round(value), unit)
+    // Round first so 59.6 minutes reads "1 hour ago", not "60 minutes ago".
+    const rounded = Math.round(value)
+    if (Math.abs(rounded) < size) return rtf.format(rounded, unit)
     value /= size
   }
   return EMPTY

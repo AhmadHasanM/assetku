@@ -166,6 +166,9 @@ export interface NotificationList {
   items: NotificationItem[]
 }
 
+/** Row cap the API applies to dashboard attention and upcoming_maintenance lists. */
+export const DASHBOARD_LIST_CAP = 50
+
 /** GET /api/dashboard. */
 export interface DashboardData {
   summary: { total: number; available: number; in_use: number; needs_attention: number }

@@ -26,6 +26,15 @@ describe("SummaryCards", () => {
     expect(screen.getByRole("button", { name: /Total Assets/ }).textContent).toContain("45")
   })
 
+  it("formats counts with the locale's thousands separator", () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <SummaryCards summary={{ ...SUMMARY, total: 8055 }} active={null} onChange={vi.fn()} />
+      </NextIntlClientProvider>,
+    )
+    expect(screen.getByRole("button", { name: /Total Assets/ }).textContent).toContain("8,055")
+  })
+
   it("clicking Needs Attention selects the three attention statuses", async () => {
     const onChange = setup()
     await userEvent.setup().click(screen.getByRole("button", { name: /Needs Attention/ }))

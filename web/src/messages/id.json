@@ -87,7 +87,6 @@
       "title": "Asset per Status"
     },
     "chart": {
-      "label": "{name}: {count}",
       "empty": "Belum ada asset.",
       "count": "Asset",
       "dimension": "Kelompok"

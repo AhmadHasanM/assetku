@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { ChevronRight, MapPin } from "lucide-react"
-import { useLocale, useTranslations } from "next-intl"
+import { useFormatter, useLocale, useTranslations } from "next-intl"
 import { StatusChip } from "@/components/assets/status-chip"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ATTENTION_STATUSES, DEFAULT_FILTERS, toSearchParams } from "@/lib/filters"
@@ -11,19 +11,20 @@ import type { DashboardData, Locale } from "@/lib/types"
 
 const SHOWN = 6
 
-/** "Perlu Perhatian": assets in maintenance, damaged, or lost; newest change first. */
-export function AttentionList({ items }: { items: DashboardData["attention"] }) {
+/** "Perlu Perhatian": assets in maintenance, damaged, or lost; newest change first. total is the uncapped count (summary.needs_attention). */
+export function AttentionList({ items, total }: { items: DashboardData["attention"]; total: number }) {
   const t = useTranslations("dashboard.attention")
   const locale = useLocale() as Locale
+  const format = useFormatter()
   const href = `/assets?${toSearchParams({ ...DEFAULT_FILTERS, status: [...ATTENTION_STATUSES] })}`
 
   return (
     <Card>
       <CardHeader className="flex items-center justify-between gap-3">
         <CardTitle className="font-heading text-xl">{t("title")}</CardTitle>
-        {items.length > SHOWN && (
+        {total > SHOWN && (
           <Link href={href} className="inline-flex min-h-11 items-center text-sm font-semibold text-nebula-text hover:underline">
-            {t("viewAll", { count: items.length })}
+            {t("viewAll", { count: format.number(total) })}
           </Link>
         )}
       </CardHeader>

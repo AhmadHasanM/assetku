@@ -55,6 +55,10 @@ describe("formatRelative", () => {
     expect(formatRelative("2026-11-11T10:00:00Z", "en", now)).toBe("yesterday")
     expect(formatRelative("2026-11-11T10:00:00Z", "id", now)).toBe("kemarin")
   })
+  it("rounds before picking the unit", () => {
+    expect(formatRelative("2026-11-12T09:00:24Z", "en", now)).toBe("1 hour ago")
+    expect(formatRelative("2026-11-12T09:59:00.4Z", "en", now)).toBe("1 minute ago")
+  })
   it("rolls up to months", () => {
     expect(formatRelative("2026-08-12T10:00:00Z", "en", now)).toBe("3 months ago")
   })

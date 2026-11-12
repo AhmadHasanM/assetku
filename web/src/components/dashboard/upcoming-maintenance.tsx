@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { CalendarClock, ChevronRight } from "lucide-react"
-import { useLocale, useTranslations } from "next-intl"
+import { useFormatter, useLocale, useTranslations } from "next-intl"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { daysBetween, formatDate, todayJakarta } from "@/lib/format"
-import type { DashboardData, Locale } from "@/lib/types"
+import { DASHBOARD_LIST_CAP, type DashboardData, type Locale } from "@/lib/types"
 
 const SHOWN = 8
 /** Same window as the default reminder (H-7). */
@@ -16,6 +16,10 @@ const DUE_SOON_DAYS = 7
 export function UpcomingMaintenance({ items }: { items: DashboardData["upcoming_maintenance"] }) {
   const t = useTranslations("dashboard.upcoming")
   const locale = useLocale() as Locale
+  const format = useFormatter()
+  const rest = items.length - SHOWN
+  // A full page from the API means there may be more rows than we got.
+  const restText = format.number(rest) + (items.length >= DASHBOARD_LIST_CAP ? "+" : "")
   const today = todayJakarta()
 
   return (
@@ -59,8 +63,8 @@ export function UpcomingMaintenance({ items }: { items: DashboardData["upcoming_
                 )
               })}
             </ul>
-            {items.length > SHOWN && (
-              <p className="px-2 pt-3 text-sm text-muted-foreground">{t("more", { count: items.length - SHOWN })}</p>
+            {rest > 0 && (
+              <p className="px-2 pt-3 text-sm text-muted-foreground">{t("more", { count: restText })}</p>
             )}
           </>
         )}

@@ -87,7 +87,6 @@
       "title": "Assets by Status"
     },
     "chart": {
-      "label": "{name}: {count}",
       "empty": "No assets yet.",
       "count": "Assets",
       "dimension": "Group"
