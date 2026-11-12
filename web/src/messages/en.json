@@ -135,5 +135,50 @@
     "morePages": "More pages",
     "commandTitle": "Command palette",
     "commandDescription": "Search for a command to run."
+  },
+  "master": {
+    "searchPlaceholder": "Search by name…",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "actions": "Actions",
+    "name": "Name",
+    "assetCount": "Assets",
+    "assets": "{count, plural, one {# asset} other {# assets}}",
+    "loadFailed": "Could not load the data.",
+    "emptyTitle": "No data yet",
+    "emptySearch": "No results for this search.",
+    "emptyHint": "Add your first entry.",
+    "saved": "Saved.",
+    "deleted": "Deleted.",
+    "inUseGeneric": "Still referenced by other records.",
+    "deleteTitle": "Delete this entry?",
+    "deleteDescription": "\"{name}\" will be deleted. This cannot be undone.",
+    "deleting": "Deleting…",
+    "kinds": {
+      "locations": {
+        "title": "Locations",
+        "addTitle": "Add location",
+        "editTitle": "Edit location"
+      },
+      "organizations": {
+        "title": "Organizations",
+        "addTitle": "Add organization",
+        "editTitle": "Edit organization"
+      },
+      "suppliers": {
+        "title": "Suppliers",
+        "addTitle": "Add supplier",
+        "editTitle": "Edit supplier"
+      }
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "contact_name": "Contact name",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address"
+    }
   }
 }

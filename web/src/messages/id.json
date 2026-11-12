@@ -135,5 +135,50 @@
     "morePages": "Halaman lainnya",
     "commandTitle": "Cari perintah",
     "commandDescription": "Cari perintah yang ingin dijalankan."
+  },
+  "master": {
+    "searchPlaceholder": "Cari nama…",
+    "add": "Tambah",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "actions": "Aksi",
+    "name": "Nama",
+    "assetCount": "Asset",
+    "assets": "{count} asset",
+    "loadFailed": "Gagal memuat data.",
+    "emptyTitle": "Belum ada data",
+    "emptySearch": "Tidak ada hasil untuk pencarian ini.",
+    "emptyHint": "Tambahkan data pertama Anda.",
+    "saved": "Data tersimpan.",
+    "deleted": "Data dihapus.",
+    "inUseGeneric": "Masih dipakai oleh data lain.",
+    "deleteTitle": "Hapus data ini?",
+    "deleteDescription": "\"{name}\" akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+    "deleting": "Menghapus…",
+    "kinds": {
+      "locations": {
+        "title": "Lokasi",
+        "addTitle": "Tambah lokasi",
+        "editTitle": "Edit lokasi"
+      },
+      "organizations": {
+        "title": "Organisasi",
+        "addTitle": "Tambah organisasi",
+        "editTitle": "Edit organisasi"
+      },
+      "suppliers": {
+        "title": "Pemasok",
+        "addTitle": "Tambah pemasok",
+        "editTitle": "Edit pemasok"
+      }
+    },
+    "fields": {
+      "name": "Nama",
+      "description": "Deskripsi",
+      "contact_name": "Nama kontak",
+      "phone": "Telepon",
+      "email": "Email",
+      "address": "Alamat"
+    }
   }
 }
