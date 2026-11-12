@@ -109,7 +109,9 @@ func TestParseMoney(t *testing.T) {
 	if got, err := ParseMoney("  "); got != nil || err != nil {
 		t.Errorf("empty: %v %v", got, err)
 	}
-	for _, in := range []string{"abc", "1.2.3,4,5", "-100", "Rp -5.000", "(1.000)", "12,50,000", "Rp", "1..5", ".", "12abc"} {
+	// "1500.123" is rejected: a lone dot followed by 3 digits means thousands
+	// grouping, which needs at most 3 leading digits.
+	for _, in := range []string{"abc", "1.2.3,4,5", "-100", "Rp -5.000", "(1.000)", "12,50,000", "Rp", "1..5", ".", "12abc", "1500.123"} {
 		if got, err := ParseMoney(in); err == nil {
 			t.Errorf("ParseMoney(%q) expected error, got %v", in, got)
 		}

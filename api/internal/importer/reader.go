@@ -49,7 +49,9 @@ func readCSV(r io.Reader) ([][]string, error) {
 	}
 	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))
 	comma := ','
-	for _, line := range strings.Split(string(data), "\n") {
+	for rest := string(data); rest != ""; {
+		line, after, _ := strings.Cut(rest, "\n")
+		rest = after
 		if strings.TrimSpace(line) == "" {
 			continue
 		}

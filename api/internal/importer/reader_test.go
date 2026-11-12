@@ -101,15 +101,21 @@ func TestReadXLS(t *testing.T) {
 	if data[cols["name"]] != "Laptop" {
 		t.Errorf("name=%q", data[cols["name"]])
 	}
+	// serial stored as a number with a custom format must stay digits
+	if got := data[cols["serial_number"]]; got != "1234567890" {
+		t.Errorf("serial=%q", got)
+	}
 	date, err := ParseDate(data[cols["purchase_date"]])
 	if err != nil || date == nil || date.String() != "2026-01-15" {
 		t.Errorf("date %q -> %v, %v", data[cols["purchase_date"]], date, err)
 	}
-	// numeric cells with custom number formats are not reliable in extrame/xls,
-	// so the sample stores the price as text
+	// price is a number formatted as "Rp" #,##0
+	if got := data[cols["purchase_cost"]]; got != "12500000" {
+		t.Errorf("cost cell=%q", got)
+	}
 	cost, err := ParseMoney(data[cols["purchase_cost"]])
 	if err != nil || cost == nil || cost.String() != "12500000" {
-		t.Errorf("cost %q -> %v, %v", data[cols["purchase_cost"]], cost, err)
+		t.Errorf("cost -> %v, %v", cost, err)
 	}
 }
 

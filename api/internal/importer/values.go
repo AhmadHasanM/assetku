@@ -47,9 +47,9 @@ var (
 	statusLookup   = invert(statusAliases)
 )
 
-// ParseCategory maps a category label to its enum code. Empty or unknown input
-// yields ("other", false) except that empty is treated as recognized (nothing
-// to report).
+// ParseCategory maps a category label to its enum code. Unknown input yields
+// ("other", false); empty input yields ("other", true), as there is nothing to
+// report.
 func ParseCategory(s string) (code string, recognized bool) {
 	n := NormalizeHeader(s)
 	if n == "" {
