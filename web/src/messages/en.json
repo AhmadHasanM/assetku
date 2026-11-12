@@ -1,0 +1,139 @@
+{
+  "common": {
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "optional": "Optional"
+  },
+  "nav": {
+    "mainMenu": "Main menu",
+    "openMenu": "Open menu",
+    "dashboard": "Dashboard",
+    "assets": "Assets",
+    "locations": "Locations",
+    "organizations": "Organizations",
+    "suppliers": "Suppliers",
+    "notifications": "Notifications"
+  },
+  "userMenu": {
+    "open": "User menu",
+    "profile": "Profile",
+    "changePassword": "Change password",
+    "language": "Language",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "logout": "Log out",
+    "indonesian": "Indonesia",
+    "english": "English"
+  },
+  "auth": {
+    "title": "Log in",
+    "subtitle": "Manage all of your company's assets in one place.",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "password": "Password",
+    "submit": "Log in",
+    "submitting": "Signing in…",
+    "emailRequired": "Email is required.",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordRequired": "Password is required.",
+    "forgotHint": "Forgot your password? Contact your {product} admin."
+  },
+  "profile": {
+    "title": "Profile",
+    "detailsTitle": "Personal details",
+    "detailsDescription": "Your position is printed on handover documents (BAST).",
+    "name": "Name",
+    "email": "Email",
+    "position": "Position",
+    "saved": "Profile saved.",
+    "passwordTitle": "Change password",
+    "passwordDescription": "Sessions on other devices will be signed out.",
+    "currentPassword": "Current password",
+    "currentPasswordInvalid": "Current password is incorrect.",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat new password",
+    "passwordHint": "At least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordChanged": "Password changed.",
+    "submitPassword": "Change password",
+    "preferencesSaveFailed": "Could not save your preference."
+  },
+  "dashboard": {
+    "title": "Dashboard"
+  },
+  "status": {
+    "available": "Available",
+    "in_use": "In Use",
+    "maintenance": "Maintenance",
+    "damaged": "Damaged",
+    "lost": "Lost",
+    "archived": "Archived"
+  },
+  "category": {
+    "it_equipment": "IT Equipment",
+    "vehicle": "Vehicle",
+    "building_facility": "Building Facility",
+    "furniture": "Furniture",
+    "electronics": "Electronics",
+    "other": "Other"
+  },
+  "maintenanceType": {
+    "preventive": "Preventive",
+    "corrective": "Corrective",
+    "inspection": "Inspection",
+    "other": "Other"
+  },
+  "condition": {
+    "good": "Good and fit for use",
+    "new_sealed": "New (sealed)",
+    "used_normal": "Used (normal)"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Cannot reach the server.",
+    "internal": "The server ran into an error.",
+    "invalid_credentials": "Incorrect email or password.",
+    "rate_limited": "Too many failed attempts. Try again later.",
+    "unauthenticated": "Your session has ended. Please log in again.",
+    "csrf": "Security token expired. Reload the page.",
+    "not_found": "Not found.",
+    "validation": "Please check the highlighted fields.",
+    "invalid_json": "Invalid request.",
+    "in_use": "Still used by {count} assets.",
+    "invalid_filter": "Invalid filter.",
+    "invalid_file": "The file could not be read.",
+    "invalid_format": "Unsupported file format.",
+    "unsupported_format": "Unsupported file format.",
+    "file_too_large": "The file is larger than 10 MB.",
+    "too_many_rows": "The file has more than 10,000 rows.",
+    "header_not_found": "Could not find the column header row.",
+    "import_not_finished": "The import has not finished yet.",
+    "export_too_large": "Too much data to export."
+  },
+  "fieldErrors": {
+    "required": "Required.",
+    "invalid": "Invalid value.",
+    "taken": "Already in use.",
+    "too_short": "At least 8 characters.",
+    "too_long": "Too long.",
+    "same_as_current": "Same as the current value.",
+    "before_date": "Cannot be before the date.",
+    "in_use": "Still in use."
+  },
+  "ui": {
+    "close": "Close",
+    "pagination": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "previousPage": "Go to previous page",
+    "nextPage": "Go to next page",
+    "morePages": "More pages",
+    "commandTitle": "Command palette",
+    "commandDescription": "Search for a command to run."
+  }
+}

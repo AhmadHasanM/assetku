@@ -1,0 +1,139 @@
+{
+  "common": {
+    "save": "Simpan",
+    "saving": "Menyimpan…",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "loading": "Memuat…",
+    "retry": "Coba lagi",
+    "optional": "Opsional"
+  },
+  "nav": {
+    "mainMenu": "Menu utama",
+    "openMenu": "Buka menu",
+    "dashboard": "Dashboard",
+    "assets": "Asset",
+    "locations": "Lokasi",
+    "organizations": "Organisasi",
+    "suppliers": "Pemasok",
+    "notifications": "Notifikasi"
+  },
+  "userMenu": {
+    "open": "Menu pengguna",
+    "profile": "Profil",
+    "changePassword": "Ganti password",
+    "language": "Bahasa",
+    "theme": "Tema",
+    "dark": "Gelap",
+    "light": "Terang",
+    "logout": "Keluar",
+    "indonesian": "Indonesia",
+    "english": "English"
+  },
+  "auth": {
+    "title": "Masuk",
+    "subtitle": "Kelola semua asset perusahaan di satu tempat.",
+    "email": "Email",
+    "emailPlaceholder": "nama@perusahaan.com",
+    "password": "Password",
+    "submit": "Masuk",
+    "submitting": "Memproses…",
+    "emailRequired": "Email wajib diisi.",
+    "emailInvalid": "Format email tidak valid.",
+    "passwordRequired": "Password wajib diisi.",
+    "forgotHint": "Lupa password? Hubungi admin {product}."
+  },
+  "profile": {
+    "title": "Profil",
+    "detailsTitle": "Data diri",
+    "detailsDescription": "Jabatan dicetak pada BAST.",
+    "name": "Nama",
+    "email": "Email",
+    "position": "Jabatan",
+    "saved": "Profil tersimpan.",
+    "passwordTitle": "Ganti password",
+    "passwordDescription": "Sesi di perangkat lain akan dikeluarkan.",
+    "currentPassword": "Password saat ini",
+    "currentPasswordInvalid": "Password saat ini salah.",
+    "newPassword": "Password baru",
+    "confirmPassword": "Ulangi password baru",
+    "passwordHint": "Minimal 8 karakter.",
+    "passwordMismatch": "Password tidak sama.",
+    "passwordChanged": "Password berhasil diganti.",
+    "submitPassword": "Ganti password",
+    "preferencesSaveFailed": "Preferensi gagal disimpan."
+  },
+  "dashboard": {
+    "title": "Dashboard"
+  },
+  "status": {
+    "available": "Tersedia",
+    "in_use": "Digunakan",
+    "maintenance": "Perbaikan",
+    "damaged": "Rusak",
+    "lost": "Hilang",
+    "archived": "Diarsipkan"
+  },
+  "category": {
+    "it_equipment": "Peralatan IT",
+    "vehicle": "Kendaraan",
+    "building_facility": "Fasilitas Gedung",
+    "furniture": "Furnitur",
+    "electronics": "Elektronik",
+    "other": "Lainnya"
+  },
+  "maintenanceType": {
+    "preventive": "Preventif",
+    "corrective": "Korektif",
+    "inspection": "Inspeksi",
+    "other": "Lainnya"
+  },
+  "condition": {
+    "good": "Baik dan Layak Digunakan",
+    "new_sealed": "Baru (Segel)",
+    "used_normal": "Bekas (Normal)"
+  },
+  "errors": {
+    "generic": "Terjadi kesalahan. Silakan coba lagi.",
+    "network": "Tidak dapat terhubung ke server.",
+    "internal": "Terjadi kesalahan di server.",
+    "invalid_credentials": "Email atau password salah.",
+    "rate_limited": "Terlalu banyak percobaan gagal. Coba lagi nanti.",
+    "unauthenticated": "Sesi Anda berakhir. Silakan masuk lagi.",
+    "csrf": "Sesi keamanan kedaluwarsa. Muat ulang halaman.",
+    "not_found": "Data tidak ditemukan.",
+    "validation": "Periksa kembali isian Anda.",
+    "invalid_json": "Permintaan tidak valid.",
+    "in_use": "Masih dipakai oleh {count} asset.",
+    "invalid_filter": "Filter tidak valid.",
+    "invalid_file": "File tidak dapat dibaca.",
+    "invalid_format": "Format file tidak didukung.",
+    "unsupported_format": "Format file tidak didukung.",
+    "file_too_large": "Ukuran file melebihi 10 MB.",
+    "too_many_rows": "File berisi lebih dari 10.000 baris.",
+    "header_not_found": "Baris judul kolom tidak ditemukan.",
+    "import_not_finished": "Import belum selesai.",
+    "export_too_large": "Data terlalu banyak untuk diekspor."
+  },
+  "fieldErrors": {
+    "required": "Wajib diisi.",
+    "invalid": "Isian tidak valid.",
+    "taken": "Sudah dipakai.",
+    "too_short": "Minimal 8 karakter.",
+    "too_long": "Terlalu panjang.",
+    "same_as_current": "Sama dengan nilai saat ini.",
+    "before_date": "Tidak boleh sebelum tanggal.",
+    "in_use": "Masih dipakai."
+  },
+  "ui": {
+    "close": "Tutup",
+    "pagination": "Navigasi halaman",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya",
+    "previousPage": "Ke halaman sebelumnya",
+    "nextPage": "Ke halaman berikutnya",
+    "morePages": "Halaman lainnya",
+    "commandTitle": "Cari perintah",
+    "commandDescription": "Cari perintah yang ingin dijalankan."
+  }
+}
