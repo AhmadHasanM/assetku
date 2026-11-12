@@ -81,11 +81,13 @@ func setup(t *testing.T) *env {
 	md := masterdata.NewService(pool, as)
 	assets := asset.NewService(pool, as)
 	hist := history.NewService(pool, as)
+	prints := asset.NewPrintService(pool, as, assets, "http://app.test")
 	srv := httptest.NewServer(httpx.NewRouter(httpx.Deps{Pool: pool, Register: func(m *http.ServeMux) {
 		as.Register(m)
 		md.Register(m)
 		assets.Register(m)
 		hist.Register(m)
+		prints.Register(m)
 	}}))
 	t.Cleanup(srv.Close)
 	e := &env{pool: pool}
