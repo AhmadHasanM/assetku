@@ -180,5 +180,70 @@
       "email": "Email",
       "address": "Alamat"
     }
+  },
+  "assets": {
+    "title": "Asset",
+    "add": "Tambah Asset",
+    "import": "Import",
+    "export": "Export",
+    "moreActions": "Aksi lainnya",
+    "summary": {
+      "label": "Ringkasan asset",
+      "total": "Total Asset",
+      "available": "Tersedia",
+      "in_use": "Digunakan",
+      "attention": "Perlu Perhatian"
+    },
+    "filters": {
+      "search": "Cari tag, nama, serial…",
+      "category": "Kategori",
+      "status": "Status",
+      "location": "Lokasi",
+      "organization": "Organisasi",
+      "allLocations": "Semua lokasi",
+      "allOrganizations": "Semua organisasi",
+      "selected": "{count} dipilih",
+      "findOption": "Cari…",
+      "noOptions": "Tidak ditemukan.",
+      "reset": "Reset",
+      "group": "Filter"
+    },
+    "columns": {
+      "asset_tag": "Asset Tag",
+      "name": "Nama Asset",
+      "category": "Kategori",
+      "model": "Model",
+      "serial_number": "Serial Number",
+      "status": "Status",
+      "actions": "Aksi"
+    },
+    "sortBy": "Urutkan berdasarkan {column}",
+    "rowActions": "Aksi untuk {name}",
+    "viewDetails": "Lihat Detail",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "deleteDialog": {
+      "title": "Hapus asset ini?",
+      "description": "\"{name}\" beserta riwayat, catatan maintenance, dan perpindahannya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.",
+      "confirm": "Hapus",
+      "deleting": "Menghapus…",
+      "done": "Asset dihapus."
+    },
+    "pagination": {
+      "range": "{from}–{to} dari {total, number}",
+      "page": "Halaman {page} dari {pages}",
+      "previous": "Halaman sebelumnya",
+      "next": "Halaman berikutnya",
+      "goTo": "Ke halaman {page}"
+    },
+    "empty": {
+      "noneTitle": "Belum ada asset",
+      "noneHint": "Import asset dari spreadsheet atau tambahkan yang pertama secara manual.",
+      "importCta": "Import dari spreadsheet",
+      "addCta": "Tambah Asset",
+      "filteredTitle": "Tidak ada asset yang cocok dengan filter",
+      "filteredHint": "Coba kata kunci lain atau hapus filter."
+    },
+    "loadFailed": "Asset tidak dapat dimuat."
   }
 }

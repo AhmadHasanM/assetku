@@ -180,5 +180,70 @@
       "email": "Email",
       "address": "Address"
     }
+  },
+  "assets": {
+    "title": "Assets",
+    "add": "Add Asset",
+    "import": "Import",
+    "export": "Export",
+    "moreActions": "More actions",
+    "summary": {
+      "label": "Asset summary",
+      "total": "Total Assets",
+      "available": "Available",
+      "in_use": "In Use",
+      "attention": "Needs Attention"
+    },
+    "filters": {
+      "search": "Search tag, name, serial…",
+      "category": "Category",
+      "status": "Status",
+      "location": "Location",
+      "organization": "Organization",
+      "allLocations": "All locations",
+      "allOrganizations": "All organizations",
+      "selected": "{count} selected",
+      "findOption": "Find…",
+      "noOptions": "Nothing found.",
+      "reset": "Reset",
+      "group": "Filters"
+    },
+    "columns": {
+      "asset_tag": "Asset Tag",
+      "name": "Asset Name",
+      "category": "Category",
+      "model": "Model",
+      "serial_number": "Serial Number",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "sortBy": "Sort by {column}",
+    "rowActions": "Actions for {name}",
+    "viewDetails": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteDialog": {
+      "title": "Delete this asset?",
+      "description": "\"{name}\" and its history, maintenance records, and movements will be permanently deleted. This cannot be undone.",
+      "confirm": "Delete",
+      "deleting": "Deleting…",
+      "done": "Asset deleted."
+    },
+    "pagination": {
+      "range": "{from}–{to} of {total, number}",
+      "page": "Page {page} of {pages}",
+      "previous": "Previous page",
+      "next": "Next page",
+      "goTo": "Go to page {page}"
+    },
+    "empty": {
+      "noneTitle": "No assets yet",
+      "noneHint": "Import your assets from a spreadsheet or add the first one by hand.",
+      "importCta": "Import from spreadsheet",
+      "addCta": "Add Asset",
+      "filteredTitle": "No assets match these filters",
+      "filteredHint": "Try a different search or clear the filters."
+    },
+    "loadFailed": "Could not load assets."
   }
 }

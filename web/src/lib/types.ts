@@ -56,3 +56,24 @@ export type MaintenanceType = (typeof MAINTENANCE_TYPES)[number]
 
 export const BAST_CONDITIONS = ["good", "new_sealed", "used_normal"] as const
 export type BastCondition = (typeof BAST_CONDITIONS)[number]
+
+/** One row of GET /api/assets. */
+export interface AssetListItem {
+  id: string
+  asset_tag: string
+  name: string
+  category: AssetCategory
+  model: string
+  serial_number: string
+  status: AssetStatus
+  assigned_to: string
+  location_name: string
+  organization_name: string
+}
+
+export interface AssetListResponse {
+  items: AssetListItem[]
+  total: number
+  page: number
+  page_size: number
+}
